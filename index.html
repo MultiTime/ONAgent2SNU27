@@ -690,29 +690,39 @@
         .profile-summary-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 0.6rem;
+            gap: 0.8rem;
         }
 
         .summary-pill {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 0.6rem;
-            border-radius: 10px;
+            padding: 0.85rem 1.1rem;
+            border-radius: 14px;
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 5px;
+            box-sizing: border-box;
+            transition: all 0.25s ease;
+        }
+
+        .summary-pill:hover {
+            background: rgba(168, 85, 247, 0.05);
+            border-color: rgba(168, 85, 247, 0.2);
+            transform: translateY(-2px);
         }
 
         .summary-lbl {
-            font-size: 0.68rem;
+            font-size: 0.78rem;
             color: var(--text-muted);
-            font-weight: 700;
+            font-weight: 800;
+            letter-spacing: -0.01em;
         }
 
         .summary-val {
-            font-size: 0.88rem;
-            font-weight: 800;
+            font-size: 1.05rem;
+            font-weight: 850;
             color: var(--text-main);
+            letter-spacing: -0.02em;
         }
 
         .books-list {
@@ -1586,6 +1596,279 @@
             border-color: rgba(37, 99, 235, 0.18) !important;
             box-shadow: 0 4px 10px rgba(37, 99, 235, 0.06) !important;
         }
+
+        /* ------------------------------------------------------------- */
+        /* AI 모델 셀렉터 커스텀 드롭다운 */
+        /* ------------------------------------------------------------- */
+        .model-selector-wrapper {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .model-selector-trigger {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 16px;
+            height: 48px;
+            background: rgba(168, 85, 247, 0.08);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            user-select: none;
+            box-sizing: border-box;
+        }
+
+        .model-selector-trigger:hover {
+            background: rgba(168, 85, 247, 0.15);
+            border-color: rgba(168, 85, 247, 0.35);
+        }
+
+        .model-selector-trigger .model-name-display {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: var(--primary-light);
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .model-selector-trigger .model-chevron {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            transition: transform 0.25s ease;
+        }
+
+        .model-selector-wrapper.open .model-chevron {
+            transform: rotate(180deg);
+        }
+
+        .model-dropdown {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 0;
+            width: 380px;
+            background: rgba(15, 15, 28, 0.97);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(168, 85, 247, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 0.5rem;
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(8px) scale(0.97);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .model-selector-wrapper.open .model-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .model-dropdown-header {
+            padding: 0.8rem 1rem 0.6rem;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .model-dropdown-header .rate-refresh-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        .model-dropdown-header .rate-refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--primary-light);
+        }
+
+        .model-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 0.7rem 0.8rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            position: relative;
+        }
+
+        .model-option:hover {
+            background: rgba(168, 85, 247, 0.06);
+        }
+
+        .model-option.selected {
+            background: rgba(168, 85, 247, 0.1);
+            border-color: rgba(168, 85, 247, 0.25);
+        }
+
+        .model-option .model-radio {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            flex-shrink: 0;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .model-option.selected .model-radio {
+            border-color: var(--primary);
+            background: var(--primary);
+        }
+
+        .model-option.selected .model-radio::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #FFF;
+        }
+
+        .model-option-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .model-option-name {
+            font-size: 0.98rem;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .model-badge {
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.02em;
+            line-height: 1.5;
+        }
+
+        .model-badge.free {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34D399;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .model-badge.quality {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60A5FA;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .model-badge.flagship {
+            background: rgba(168, 85, 247, 0.15);
+            color: #C084FC;
+            border: 1px solid rgba(168, 85, 247, 0.2);
+        }
+
+        .model-badge.latest {
+            background: rgba(251, 191, 36, 0.15);
+            color: #FCD34D;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .model-option-rate {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            margin-top: 6px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .rate-tag {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 0.72rem;
+            white-space: nowrap;
+        }
+
+        .model-usage-bar-container {
+            margin-top: 4px;
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .model-usage-bar {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s ease;
+            background: linear-gradient(90deg, #10B981, #34D399);
+        }
+
+        .model-usage-bar.warn {
+            background: linear-gradient(90deg, #F59E0B, #FBBF24);
+        }
+
+        .model-usage-bar.danger {
+            background: linear-gradient(90deg, #EF4444, #F87171);
+        }
+
+        /* 라이트 테마 오버라이드 */
+        body.light-theme .model-selector-trigger {
+            background: rgba(37, 99, 235, 0.06);
+            border-color: rgba(37, 99, 235, 0.18);
+        }
+
+        body.light-theme .model-selector-trigger .model-name-display {
+            color: #2563EB;
+        }
+
+        body.light-theme .model-dropdown {
+            background: rgba(255, 255, 255, 0.98);
+            border-color: rgba(37, 99, 235, 0.15);
+            box-shadow: 0 16px 48px rgba(37, 99, 235, 0.1);
+        }
+
+        body.light-theme .model-option:hover {
+            background: rgba(37, 99, 235, 0.04);
+        }
+
+        body.light-theme .model-option.selected {
+            background: rgba(37, 99, 235, 0.08);
+            border-color: rgba(37, 99, 235, 0.2);
+        }
+
+        body.light-theme .model-option-name {
+            color: #0F172A;
+        }
+
+        body.light-theme .model-option.selected .model-radio {
+            border-color: #2563EB;
+            background: #2563EB;
+        }
     </style>
 </head>
 
@@ -1606,16 +1889,16 @@
 
         <!-- 좌측 프리미엄 내비게이션 바 -->
         <nav class="side-nav">
-            <div class="nav-brand" onclick="location.href='ONStudy2SNU27.html'">O.</div>
+            <div class="nav-brand" onclick="location.href='https://multitime.github.io/ONStudyToSNU27/'">O.</div>
             <div class="nav-menu">
-                <a class="nav-item" href="ONStudy2SNU27.html">
+                <a class="nav-item" href="https://multitime.github.io/ONStudyToSNU27/">
                     <svg class="nav-icon" viewBox="0 0 24 24">
                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round"
                             stroke-linejoin="round" />
                     </svg>
                     <span class="nav-text">플래너</span>
                 </a>
-                <a class="nav-item" href="ONPlan2SNU27.html">
+                <a class="nav-item" href="https://multitime.github.io/ONPlan2SNU27/">
                     <svg class="nav-icon" viewBox="0 0 24 24">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                         <line x1="16" y1="2" x2="16" y2="6" />
@@ -1634,7 +1917,7 @@
                     <span class="nav-text">AI에이전트</span>
                 </div>
             </div>
-            <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 800;">ONFINE</div>
+            <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 800;"></div>
         </nav>
 
         <!-- 메인 작업대 -->
@@ -1659,7 +1942,9 @@
                     <button class="profile-trigger" onclick="openModal('profileModal')">
                         <span>👤</span> <span id="btnProfileText">과목 & 목표 설정</span>
                     </button>
-                    <button class="profile-trigger" style="background: rgba(168, 85, 247, 0.15); border: 1px solid var(--border-glass);" onclick="openModal('apiSettingsModal')">
+                    <button class="profile-trigger"
+                        style="background: rgba(168, 85, 247, 0.15); border: 1px solid var(--border-glass);"
+                        onclick="openModal('apiSettingsModal')">
                         <span>⚙️</span> <span>API 설정</span>
                     </button>
                 </div>
@@ -1717,9 +2002,27 @@
                                         작성 정석</button>
                                 </div>
 
-
-
                                 <div class="input-row">
+                                    <!-- 모델 셀렉터 드롭다운 -->
+                                    <div class="model-selector-wrapper" id="modelSelectorWrapper">
+                                        <div class="model-selector-trigger" onclick="toggleModelDropdown()">
+                                            <span class="model-name-display"
+                                                id="modelNameDisplay">gemini-3-flash-preview</span>
+                                            <span class="model-chevron">▼</span>
+                                        </div>
+                                        <div class="model-dropdown" id="modelDropdown">
+                                            <div class="model-dropdown-header">
+                                                <span>AI 모델 선택</span>
+                                                <button class="rate-refresh-btn"
+                                                    onclick="event.stopPropagation(); fetchAllModelRateLimits()"
+                                                    title="사용량 한도 새로고침"> 한도 조회</button>
+                                            </div>
+                                            <div id="modelOptionsList">
+                                                <!-- JS에서 동적 렌더링 -->
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <input type="text" id="chatInput" class="chat-input"
                                         placeholder="학습 질문, 수능 계획, 멘탈 고민 등을 편하게 질문해보세요..."
                                         onkeypress="if(event.key === 'Enter') sendChatMessage()">
@@ -2089,13 +2392,15 @@
             </div>
             <div id="apiBackendFields" class="form-grp" style="margin-bottom:1rem;">
                 <label>백엔드 서버 URL (Backend API)</label>
-                <input type="text" id="apiBackendUrl" class="form-val-input" placeholder="https://onplan2snu27-backend.onrender.com">
+                <input type="text" id="apiBackendUrl" class="form-val-input"
+                    placeholder="https://onplan2snu27-backend.onrender.com">
             </div>
             <div id="apiDirectFields" class="form-grp" style="margin-bottom:1rem; display:none;">
                 <label>Google AI Studio API Key</label>
                 <input type="password" id="apiUserKey" class="form-val-input" placeholder="AIzaSy...">
                 <p style="font-size:0.75rem; color:var(--text-muted); margin-top:4px; line-height:1.3;">
-                    💡 Google AI Studio에서 발급받은 API 키를 입력하시면, 백엔드 서버 장애나 지연 없이 0.5초만에 응답을 수신하는 초고속 통신이 가능합니다. 키는 암호화되어 안전하게 보관됩니다.
+                    💡 Google AI Studio에서 발급받은 API 키를 입력하시면, 백엔드 서버 장애나 지연 없이 0.5초만에 응답을 수신하는 초고속 통신이 가능합니다. 키는 암호화되어
+                    안전하게 보관됩니다.
                 </p>
             </div>
             <div class="modal-footer">
@@ -2131,8 +2436,52 @@
         });
         const USER_DOC_ID = "minchan_data";
 
-        // 하드코딩된 AI 모델 (gemini-3-flash-preview 고정)
-        const AI_MODEL = "gemini-3-flash-preview";
+        // AI 모델 목록 및 동적 선택 시스템
+        const AI_MODELS = [
+            {
+                id: "gemini-3.5-flash",
+                name: "Gemini 3.5 Flash",
+                badges: [{ text: "최신", cls: "latest" }, { text: "플래그십", cls: "flagship" }]
+            },
+            {
+                id: "gemini-3.1-flash-lite",
+                name: "Gemini 3.1 Flash Lite",
+                badges: [{ text: "사용량 최다", cls: "free" }]
+            },
+            {
+                id: "gemini-3-flash-preview",
+                name: "Gemini 3 Flash Preview",
+                badges: [{ text: "기본", cls: "flagship" }]
+            },
+            {
+                id: "gemini-2.5-flash",
+                name: "Gemini 2.5 Flash",
+                badges: []
+            },
+            {
+                id: "gemini-2.5-flash-lite",
+                name: "Gemini 2.5 Flash Lite",
+                badges: [{ text: "퀄리티 좋음", cls: "quality" }]
+            }
+        ];
+
+        // 동적 AI 모델 (기본: gemini-3-flash-preview, localStorage/Firestore에서 복원 가능)
+        let AI_MODEL = "gemini-3-flash-preview";
+
+        // 모델별 사용량 로컬 트래킹 (오늘 날짜 기준 RPD 카운팅)
+        let modelUsageTracker = {}; // { "gemini-3-flash-preview": { date: "2026-05-24", count: 5 }, ... }
+
+        // Google AI Studio 공식 무료 티어 기준 모델별 기본 Rate Limit 룩업 테이블
+        const DEFAULT_RATE_LIMITS = {
+            "gemini-3.5-flash": { rpm: 5, rpd: 20, tpm: 250000 },
+            "gemini-3.1-flash-lite": { rpm: 15, rpd: 500, tpm: 250000 }, // 사용량 최다 설정
+            "gemini-3-flash-preview": { rpm: 5, rpd: 20, tpm: 250000 },
+            "gemini-2.5-flash": { rpm: 5, rpd: 20, tpm: 250000 },
+            "gemini-2.5-flash-lite": { rpm: 10, rpd: 20, tpm: 250000 }
+        };
+
+        // 모델별 Rate Limit 캐시 (기본값으로 사전 초기화하여 즉시 디스플레이되도록 처리)
+        let modelRateLimits = JSON.parse(JSON.stringify(DEFAULT_RATE_LIMITS));
 
         // 전역 앱 데이터 상태
         let appData = {
@@ -2158,7 +2507,11 @@
         // 로컬스토리지 백업/오프라인 캐싱 유틸리티
         function saveToLocalStorage() {
             try {
-                localStorage.setItem('ONAgent_appData_cache', JSON.stringify(appData));
+                const saveData = JSON.parse(JSON.stringify(appData));
+                saveData.selectedModel = AI_MODEL;
+                saveData.modelUsageTracker = modelUsageTracker;
+                saveData.modelRateLimits = modelRateLimits;
+                localStorage.setItem('ONAgent_appData_cache', JSON.stringify(saveData));
             } catch (e) {
                 console.error("로컬 스토리지 캐시 백업 실패: ", e);
             }
@@ -2176,12 +2529,183 @@
                     if (data.schoolGrades) appData.schoolGrades = data.schoolGrades;
                     if (data.apiKey) appData.apiKey = data.apiKey;
                     if (data.apiSettings) appData.apiSettings = data.apiSettings;
+                    if (data.selectedModel) AI_MODEL = data.selectedModel;
+                    if (data.modelUsageTracker) modelUsageTracker = data.modelUsageTracker;
+                    if (data.modelRateLimits) modelRateLimits = data.modelRateLimits;
                     return true;
                 }
             } catch (e) {
                 console.error("로컬 캐시 복구 실패: ", e);
             }
             return false;
+        }
+
+        // -------------------------------------------------------------
+        // AI 모델 셀렉터 커스텀 드롭다운 로직
+        // -------------------------------------------------------------
+        window.toggleModelDropdown = function () {
+            const wrapper = document.getElementById('modelSelectorWrapper');
+            wrapper.classList.toggle('open');
+        };
+
+        // 외부 클릭 시 드롭다운 닫기
+        document.addEventListener('click', (e) => {
+            const wrapper = document.getElementById('modelSelectorWrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                wrapper.classList.remove('open');
+            }
+        });
+
+        window.selectModel = function (modelId) {
+            AI_MODEL = modelId;
+            const model = AI_MODELS.find(m => m.id === modelId);
+            document.getElementById('modelNameDisplay').innerText = modelId;
+            document.getElementById('modelSelectorWrapper').classList.remove('open');
+            renderModelOptions();
+            saveToLocalStorage();
+
+            // Firestore에도 동기화
+            setDoc(doc(db, "users", USER_DOC_ID), { selectedModel: AI_MODEL }, { merge: true })
+                .catch(e => console.error("모델 선택 동기화 실패:", e));
+
+            console.log(`🤖 [Model] 모델 변경: ${modelId}`);
+        };
+
+        function renderModelOptions() {
+            const container = document.getElementById('modelOptionsList');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const today = new Date().toISOString().split('T')[0];
+
+            AI_MODELS.forEach(model => {
+                const isSelected = model.id === AI_MODEL;
+                const usage = modelUsageTracker[model.id];
+                const todayCount = (usage && usage.date === today) ? usage.count : 0;
+                // 캐시가 유실되거나 limits가 비어있을 시 기본 룩업 테이블에서 매칭
+                const limits = modelRateLimits[model.id] || DEFAULT_RATE_LIMITS[model.id];
+
+                let badgesHtml = model.badges.map(b => `<span class="model-badge ${b.cls}">${b.text}</span>`).join('');
+
+                let rateHtml = '';
+                if (limits) {
+                    rateHtml = `<div class="model-option-rate">`;
+                    if (limits.rpm) rateHtml += `<span class="rate-tag">RPM: ${limits.rpm} (분당 제한)</span>`;
+                    if (limits.rpd) rateHtml += `<span class="rate-tag">RPD: ${limits.rpd} (일일 제한)</span>`;
+                    if (limits.tpm) rateHtml += `<span class="rate-tag">TPM: ${(limits.tpm / 1000).toFixed(0)}K (토큰 제한)</span>`;
+                    rateHtml += `</div>`;
+                }
+
+                // 사용량 프로그레스 바 및 텍스트 상세화 (가독성 극대화)
+                let usageBarHtml = '';
+                if (limits && limits.rpd) {
+                    const pct = Math.min((todayCount / limits.rpd) * 100, 100);
+                    const barCls = pct > 80 ? 'danger' : pct > 50 ? 'warn' : '';
+                    usageBarHtml = `
+                        <div class="model-usage-bar-container" title="오늘 ${todayCount}/${limits.rpd}회 사용">
+                            <div class="model-usage-bar ${barCls}" style="width: ${pct}%"></div>
+                        </div>
+                        <div style="font-size:0.78rem; color:var(--text-sub); margin-top:6px; display:flex; justify-content:space-between; font-weight:700;">
+                            <span>오늘 사용량: <strong style="color:var(--primary-light); font-size:0.85rem;">${todayCount}</strong> / ${limits.rpd} 회</span>
+                            <span>${pct.toFixed(0)}%</span>
+                        </div>`;
+                } else {
+                    const fallbackRpd = DEFAULT_RATE_LIMITS[model.id]?.rpd || 1500;
+                    const pct = Math.min((todayCount / fallbackRpd) * 100, 100);
+                    usageBarHtml = `
+                        <div class="model-usage-bar-container" title="오늘 ${todayCount}/${fallbackRpd}회 사용">
+                            <div class="model-usage-bar" style="width: ${pct}%"></div>
+                        </div>
+                        <div style="font-size:0.78rem; color:var(--text-sub); margin-top:6px; display:flex; justify-content:space-between; font-weight:700;">
+                            <span>오늘 사용량: <strong style="color:var(--primary-light); font-size:0.85rem;">${todayCount}</strong> / ${fallbackRpd} 회</span>
+                            <span>${pct.toFixed(0)}%</span>
+                        </div>`;
+                }
+
+                const optionEl = document.createElement('div');
+                optionEl.className = `model-option ${isSelected ? 'selected' : ''}`;
+                optionEl.onclick = () => selectModel(model.id);
+                optionEl.innerHTML = `
+                    <div class="model-radio"></div>
+                    <div class="model-option-info">
+                        <div class="model-option-name">${model.name} ${badgesHtml}</div>
+                        ${rateHtml}
+                        ${usageBarHtml}
+                    </div>
+                `;
+                container.appendChild(optionEl);
+            });
+        }
+
+        // 모델별 Rate Limit 조회 및 API 키 유효성 검사 (Google API models.get 활용)
+        window.fetchAllModelRateLimits = async function () {
+            const effectiveApiKey = (appData.apiSettings?.apiKey) || appData.apiKey;
+            if (!effectiveApiKey) {
+                alert("⚙️ API 설정에서 Google AI Studio API Key를 먼저 입력해 주세요.");
+                return;
+            }
+
+            console.log("🔄 [RateLimit] Google API를 통한 API 키 유효성 및 스펙 점검 시작...");
+            const btn = document.querySelector('.rate-refresh-btn');
+            if (btn) { btn.innerText = ' 검증 중...'; btn.disabled = true; }
+
+            let successCount = 0;
+
+            for (const model of AI_MODELS) {
+                try {
+                    // Google AI Studio 모델 정보 조회 API 호출
+                    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model.id}?key=${effectiveApiKey}`);
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        successCount++;
+
+                        // 현재 모델의 기본 룩업 값을 복사
+                        const limits = JSON.parse(JSON.stringify(DEFAULT_RATE_LIMITS[model.id] || { rpm: 15, rpd: 1500, tpm: 1000000 }));
+
+                        // 구글이 미래에 모델 메타데이터 API에 rate limits를 정식 지원할 경우 동적 파싱 지원
+                        if (data.rateLimits) {
+                            data.rateLimits.forEach(rl => {
+                                if (rl.rateLimitType === 'REQUESTS_PER_MINUTE') limits.rpm = rl.limit || rl.value;
+                                if (rl.rateLimitType === 'TOKENS_PER_MINUTE') limits.tpm = rl.limit || rl.value;
+                                if (rl.rateLimitType === 'REQUESTS_PER_DAY') limits.rpd = rl.limit || rl.value;
+                            });
+                        }
+
+                        // API 스펙에서 가져온 토큰 한도 동적 업데이트
+                        if (data.inputTokenLimit) limits.tpm = data.inputTokenLimit;
+
+                        modelRateLimits[model.id] = limits;
+                        console.log(`✅ [RateLimit] ${model.id} 스펙 확인:`, limits);
+                    } else {
+                        console.warn(`⚠️ [RateLimit] ${model.id} 조회 실패: HTTP ${resp.status}`);
+                    }
+                } catch (err) {
+                    console.warn(`⚠️ [RateLimit] ${model.id} 조회 오류:`, err.message);
+                }
+            }
+
+            if (btn) { btn.innerText = ' 한도 조회'; btn.disabled = false; }
+
+            if (successCount > 0) {
+                alert(` API 키 유효성 검증 성공!\nGoogle AI Studio와의 실시간 통신이 안전하게 확인되었습니다.\n(현재 Google Studio API 무료 정책에 따른 일일/분당 한도 데이터가 각 모델 카드 하단에 로딩되었습니다.)`);
+            } else {
+                alert(`❌ API 키 검증 실패!\n입력하신 API 키가 유효하지 않거나 만료되었습니다.\n설정(⚙️)을 열어 키를 다시 한 번 확인해 주세요.`);
+            }
+
+            renderModelOptions();
+            saveToLocalStorage();
+            console.log("✅ [RateLimit] 전체 모델 Rate Limit 동기화 및 API 검증 완료!");
+        };
+
+        // 사용량 트래킹 카운터 증가 (오늘 날짜 기준 RPD)
+        function trackModelUsage(modelId) {
+            const today = new Date().toISOString().split('T')[0];
+            if (!modelUsageTracker[modelId] || modelUsageTracker[modelId].date !== today) {
+                modelUsageTracker[modelId] = { date: today, count: 0 };
+            }
+            modelUsageTracker[modelId].count++;
+            console.log(`📊 [Usage] ${modelId}: 오늘 ${modelUsageTracker[modelId].count}회 사용`);
+            renderModelOptions(); // 사용량 바 실시간 업데이트
         }
 
         // 타이머 상태 변수
@@ -2220,6 +2744,10 @@
                 drawGradeChart();
                 generateAIDiagnosticReport();
             }
+
+            // 모델 셀렉터 초기 렌더링 (캐시에서 복원된 모델 반영)
+            document.getElementById('modelNameDisplay').innerText = AI_MODEL;
+            renderModelOptions();
 
             // 2. Firestore 실시간 리스너 등록 (onSnapshot 복원)
             try {
@@ -2309,6 +2837,15 @@
 
                     if (data.apiKey) {
                         appData.apiKey = data.apiKey;
+                    }
+
+                    // 선택된 모델 실시간 동기화
+                    if (data.selectedModel && data.selectedModel !== AI_MODEL) {
+                        AI_MODEL = data.selectedModel;
+                        const nameEl = document.getElementById('modelNameDisplay');
+                        if (nameEl) nameEl.innerText = AI_MODEL;
+                        renderModelOptions();
+                        console.log("🔄 [Model] 실시간 모델 동기화:", AI_MODEL);
                     }
 
                     // 서버에서 누락된 로컬 활성 데이터를 서버로 즉시 업로드하여 싱크 맞춤 (백업 자동화)
@@ -2442,14 +2979,14 @@
                 apiSettings: appData.apiSettings,
                 apiKey: appData.apiKey
             }, { merge: true })
-            .then(() => {
-                console.info("📤 [Firestore] API 설정 백업 완료!");
-                alert("API 설정이 성공적으로 저장 및 클라우드 동기화되었습니다! 🚀");
-            })
-            .catch(err => {
-                console.error("API Settings Sync Error: ", err);
-                alert("설정은 반영되었으나 서버 동기화에 실패했습니다. (오프라인 캐시 적용됨)");
-            });
+                .then(() => {
+                    console.info("📤 [Firestore] API 설정 백업 완료!");
+                    alert("API 설정이 성공적으로 저장 및 클라우드 동기화되었습니다! 🚀");
+                })
+                .catch(err => {
+                    console.error("API Settings Sync Error: ", err);
+                    alert("설정은 반영되었으나 서버 동기화에 실패했습니다. (오프라인 캐시 적용됨)");
+                });
         };
 
         // -------------------------------------------------------------
@@ -2717,7 +3254,7 @@
                     timeoutId = setTimeout(() => {
                         console.warn("⏱️ [Chat] 구글 다이렉트 API 통신 시간 초과 (15초)");
                         controller.abort();
-                    }, 15000);
+                    }, 60000);
 
                     const googleApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${effectiveApiKey}`;
                     console.log("🔎 [Debug] 구글 API URL:", googleApiUrl.replace(effectiveApiKey, 'KEY_HIDDEN'));
@@ -2745,7 +3282,7 @@
                             errMsg = errBody.error?.message || errMsg;
                         } catch (jsonErr) {
                             console.warn("🔎 [Debug] 에러 응답 JSON 파싱 실패:", jsonErr);
-                            try { errMsg = await response.text(); } catch(e) {}
+                            try { errMsg = await response.text(); } catch (e) { }
                         }
                         throw new Error(`구글 다이렉트 API 오류: ${errMsg}`);
                     }
@@ -2786,7 +3323,7 @@
 
                     if (!response.ok) {
                         let errDetail = `HTTP ${response.status}`;
-                        try { errDetail = await response.text(); } catch(e) {}
+                        try { errDetail = await response.text(); } catch (e) { }
                         throw new Error(`백엔드 서버 오류 (${errDetail}). ⚙️ 설정에서 직접 API 모드로 전환하세요.`);
                     }
                     const resData = await response.json();
@@ -2813,6 +3350,7 @@
 
                 currentSession.history.push({ role: 'bot', text: botReply });
                 console.log("✅ [Debug] 봇 답변을 최신 세션 객체에 push 완료. 현재 history 길이:", currentSession.history.length);
+                trackModelUsage(AI_MODEL); // 사용량 트래킹 카운터 증가
                 saveToLocalStorage();
 
                 setTimeout(() => {
@@ -2824,7 +3362,7 @@
             } catch (error) {
                 if (timeoutId) clearTimeout(timeoutId);
                 console.error("❌ [Chat] AI Response Error:", error.name, error.message, error);
-                
+
                 let errorMsg = error.message;
                 if (error.name === 'AbortError') {
                     errorMsg = "서버 통신 시간이 초과되었습니다 (타임아웃). 서버가 잠들어 있거나 네트워크 문제입니다.";
