@@ -2492,6 +2492,7 @@
                 { id: "session_default", name: "기본 대화방", history: [] }
             ],
             activeSessionId: "session_default",
+            deletedSessionIds: [], // 삭제된 대화방 ID 목록 추적 (부활 방지용)
             memos: [],
             studentProfile: {
                 university: "",
@@ -2532,6 +2533,7 @@
                     if (data.selectedModel) AI_MODEL = data.selectedModel;
                     if (data.modelUsageTracker) modelUsageTracker = data.modelUsageTracker;
                     if (data.modelRateLimits) modelRateLimits = data.modelRateLimits;
+                    if (data.deletedSessionIds) appData.deletedSessionIds = data.deletedSessionIds;
                     return true;
                 }
             } catch (e) {
@@ -2754,6 +2756,13 @@
                 console.log(`📡 [Firestore] 실시간 동기화 리스너 등록 중... (경로: users/${USER_DOC_ID})`);
 
                 onSnapshot(doc(db, "users", USER_DOC_ID), (docSnap) => {
+                    // 💡 [레이스 컨디션 방지 핵심] 로컬 쓰기 작업(삭제, 생성, 이름 변경 등) 진행 중일 때는
+                    // 서버 데이터로의 역동기화 덮어쓰기를 스킵하여 로컬 최신 데이터가 구버전 데이터로 롤백되는 오류를 철저히 차단합니다.
+                    if (docSnap.metadata.hasPendingWrites) {
+                        console.log("⏳ [Firestore] 로컬 최신 쓰기 반영 중 (Pending Writes)... 서버 덮어쓰기 유보");
+                        return;
+                    }
+
                     console.log("📡 [Firestore] 실시간 업데이트 데이터 감지 및 수신 성공!");
 
                     // 로딩 스크린 해제
@@ -2791,23 +2800,45 @@
                         console.log("🔄 [Memos] 실시간 동기화 완료");
                     }
 
-                    // 4. 대화방 멀티 세션 병합 (chatSessions 전용)
-                    const serverChatCount = data.chatSessions ? data.chatSessions.reduce((acc, s) => acc + (s.history ? s.history.length : 0), 0) : 0;
-                    const localChatCount = appData.chatSessions ? appData.chatSessions.reduce((acc, s) => acc + (s.history ? s.history.length : 0), 0) : 0;
-
+                    // 4. 대화방 멀티 세션 병합 (chatSessions 전용) - 단순하고 완벽한 서버-SSOT 동기화 적용
                     let isChatUpdated = false;
 
-                    if (serverChatCount > 0) {
-                        appData.chatSessions = data.chatSessions;
-                        appData.activeSessionId = data.activeSessionId || data.chatSessions[0].id;
-                        console.log("🔄 [Chat] 🚀 실시간 멀티 세션 대화 히스토리 동기화 완료");
+                    if (data.chatSessions && Array.isArray(data.chatSessions) && data.chatSessions.length > 0) {
+                        // 부활 방지 필터링 적용 (이미 삭제된 방이 복구되지 않도록 차단)
+                        const activeDeletedIds = appData.deletedSessionIds || [];
+                        const filteredSessions = data.chatSessions.filter(s => !activeDeletedIds.includes(s.id));
+
+                        if (filteredSessions.length > 0) {
+                            appData.chatSessions = filteredSessions;
+                            // 활성 세션 ID가 삭제된 세션이거나 없는 세션인 경우 첫 번째 세션으로 안전 매핑
+                            if (activeDeletedIds.includes(appData.activeSessionId) || !appData.chatSessions.some(s => s.id === appData.activeSessionId)) {
+                                appData.activeSessionId = appData.chatSessions[0].id;
+                            } else {
+                                appData.activeSessionId = data.activeSessionId || appData.chatSessions[0].id;
+                            }
+                        } else {
+                            // 필터링 후 남은 세션이 하나도 없는 최초 로딩 및 정화 복원
+                            appData.chatSessions = [{ id: "session_default", name: "기본 대화방", history: [] }];
+                            appData.activeSessionId = "session_default";
+                        }
+
+                        console.log("🔄 [Chat] 🚀 서버 대화방 목록 동기화 완료 (세션 수:", appData.chatSessions.length, ")");
                         isChatUpdated = true;
-                    } else if (localChatCount > 0) {
-                        console.log("💾 [Chat] 로컬 캐시 대화 기록이 서버보다 우세하므로 로컬 기록 보존");
+
+                        // 서버의 데이터가 삭제된 방을 여전히 포함하고 있다면 즉시 정화 업로드 마킹
+                        if (filteredSessions.length !== data.chatSessions.length) {
+                            console.warn("🧹 [Chat] 서버 데이터 내 삭제 처리된 방 감지! 즉시 덮어쓰기 정화 스케줄 가동");
+                            isChatUpdated = false; // 백업 동기화 루프가 최신 필터링 상태를 업로드하도록 유도
+                        }
                     } else {
-                        appData.chatSessions = [{ id: "session_default", name: "기본 대화방", history: [] }];
-                        appData.activeSessionId = "session_default";
-                        console.log("💬 [Chat] 양측 모두 대화 기록이 없어 기본 대화방으로 초기 구동");
+                        // 서버에 대화방 정보가 누락된 최초 실행 상황 등에서만 로컬 캐시 데이터 보존 및 신규 생성
+                        if (appData.chatSessions && appData.chatSessions.length > 0) {
+                            console.log("💾 [Chat] 서버 대화방 정보가 없어 로컬 캐시 대화 기록 보존");
+                        } else {
+                            appData.chatSessions = [{ id: "session_default", name: "기본 대화방", history: [] }];
+                            appData.activeSessionId = "session_default";
+                            console.log("💬 [Chat] 양측 모두 대화 기록이 없어 기본 대화방으로 초기 구동");
+                        }
                     }
 
                     // 5. 프로필 병합
@@ -2853,7 +2884,7 @@
                     if (!isServerProfileFilled && isLocalProfileFilled) uploadPayload.studentProfile = appData.studentProfile;
                     if ((!data.books || data.books.length === 0) && appData.books && appData.books.length > 0) uploadPayload.books = appData.books;
                     if ((!data.dailyPlanner || Object.keys(data.dailyPlanner).length === 0) && appData.dailyPlanner && Object.keys(appData.dailyPlanner).length > 0) uploadPayload.dailyPlanner = appData.dailyPlanner;
-                    if (!isChatUpdated && localChatCount > 0) {
+                    if (!isChatUpdated && appData.chatSessions && appData.chatSessions.length > 0) {
                         uploadPayload.chatSessions = appData.chatSessions;
                         uploadPayload.activeSessionId = appData.activeSessionId;
                     }
@@ -3151,6 +3182,12 @@
 
             const currentIdx = appData.chatSessions.findIndex(s => s.id === id);
             if (currentIdx > -1) {
+                // 부활 방지 목록에 등록
+                if (!appData.deletedSessionIds) appData.deletedSessionIds = [];
+                if (!appData.deletedSessionIds.includes(id)) {
+                    appData.deletedSessionIds.push(id);
+                }
+
                 appData.chatSessions.splice(currentIdx, 1);
                 appData.activeSessionId = appData.chatSessions[0].id;
 
