@@ -1,0 +1,3620 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ONAgent2SNU27 | AI Workspace</title>
+    <link rel="icon" href="icon.ico">
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #A855F7;
+            --primary-dark: #7E22CE;
+            --primary-light: #C084FC;
+            --accent: #3B82F6;
+            --accent-dark: #1D4ED8;
+            --bg-dark: #090A15;
+            --text-main: #F3F4F6;
+            --text-sub: #9CA3AF;
+            --text-muted: #6B7280;
+            --border-glass: rgba(168, 85, 247, 0.15);
+            --border-glass-light: rgba(255, 255, 255, 0.1);
+            --bg-card: rgba(20, 20, 35, 0.6);
+            --radius-box: 24px;
+            --radius-item: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+            font-family: "Pretendard Variable", Pretendard, -apple-system, sans-serif !important;
+        }
+
+        body {
+            color: var(--text-main);
+            font-size: 14px;
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            display: flex;
+            letter-spacing: -0.02em;
+        }
+
+        /* 우주/심해 그라데이션 백그라운드 */
+        .bg-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .shape {
+            position: absolute;
+            opacity: 0.25;
+            border-radius: 50%;
+            filter: blur(80px);
+            transition: all 1s ease;
+        }
+
+        .shape-1 {
+            width: 80vw;
+            height: 80vw;
+            background: radial-gradient(circle, #7E22CE 0%, rgba(126, 34, 206, 0) 70%);
+            bottom: -30%;
+            left: -10%;
+        }
+
+        .shape-2 {
+            width: 70vw;
+            height: 70vw;
+            background: radial-gradient(circle, #3B82F6 0%, rgba(59, 130, 246, 0) 70%);
+            top: -20%;
+            right: -10%;
+        }
+
+        .shape-3 {
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, #EC4899 0%, rgba(236, 72, 153, 0) 70%);
+            top: 40%;
+            left: 30%;
+            opacity: 0.15;
+        }
+
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader-logo {
+            font-family: 'Outfit', sans-serif !important;
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #C084FC, #3B82F6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: -0.05em;
+        }
+
+        .app-wrapper {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 좌측 사이드바 내비게이션 */
+        .side-nav {
+            width: 85px;
+            background: rgba(10, 10, 20, 0.6);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-right: 1px solid var(--border-glass-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 0;
+            flex-shrink: 0;
+            justify-content: space-between;
+        }
+
+        .nav-brand {
+            font-family: 'Outfit', sans-serif !important;
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary-light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.05em;
+            margin-bottom: 3rem;
+            cursor: pointer;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            width: 100%;
+            align-items: center;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            color: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            width: 100%;
+            padding: 0.6rem 0;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .nav-item.active {
+            color: var(--primary-light);
+            font-weight: 800;
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 0 4px 4px 0;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            stroke-width: 2.2;
+            fill: none;
+            transition: transform 0.3s;
+        }
+
+        .nav-item:hover .nav-icon {
+            transform: scale(1.1);
+        }
+
+        .nav-text {
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+
+        /* 메인 워크스페이스 레이아웃 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: rgba(5, 5, 12, 0.3);
+        }
+
+        /* 헤더 바 */
+        header {
+            padding: 1.2rem 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(10, 10, 20, 0.3);
+            border-bottom: 1px solid var(--border-glass-light);
+            backdrop-filter: blur(10px);
+            flex-shrink: 0;
+        }
+
+        .header-title-area h2 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #FFFFFF, var(--text-sub));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-title-area p {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            margin-top: 0.15rem;
+            font-weight: 500;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .desk-selector {
+            display: flex;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid var(--border-glass-light);
+        }
+
+        .desk-btn {
+            border: none;
+            background: transparent;
+            padding: 7px 18px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-sub);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .desk-btn.active {
+            background: rgba(168, 85, 247, 0.15);
+            color: #FFFFFF;
+            border: 1px solid rgba(168, 85, 247, 0.25);
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.1);
+        }
+
+        .profile-trigger {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 0.55rem 1.1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2);
+            transition: all 0.3s;
+        }
+
+        .profile-trigger:hover {
+            transform: translateY(-1.5px);
+            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.3);
+        }
+
+        /* 서브 데스크 페이지 영역 */
+        .workspace-panel {
+            flex: 1;
+            padding: 1.5rem 2rem;
+            overflow: hidden;
+            display: none;
+        }
+
+        .workspace-panel.active {
+            display: flex;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ------------------------------------------------------------- */
+        /* 1. AI 멘토링 데스크 (AI Mentor) */
+        /* ------------------------------------------------------------- */
+        .mentor-grid {
+            display: grid;
+            grid-template-columns: 2.2fr 1fr;
+            width: 100%;
+            height: 100%;
+            gap: 1.5rem;
+        }
+
+        .chat-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-box);
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .chat-sessions-sidebar {
+            width: 200px;
+            background: rgba(255, 255, 255, 0.02);
+            border-right: 1px solid var(--border-glass-light);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .sessions-sidebar-header {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid var(--border-glass-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(168, 85, 247, 0.03);
+            font-weight: 800;
+            font-size: 0.85rem;
+            color: var(--primary-light);
+        }
+
+        .btn-add-session {
+            background: transparent;
+            border: none;
+            color: var(--primary-light);
+            font-size: 1.4rem;
+            font-weight: 800;
+            cursor: pointer;
+            line-height: 1;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+        }
+
+        .btn-add-session:hover {
+            background: rgba(168, 85, 247, 0.15);
+            color: #FFFFFF;
+        }
+
+        .sessions-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sessions-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sessions-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+        }
+
+        .session-item {
+            padding: 0.65rem 0.8rem;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            color: var(--text-sub);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+
+        .session-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-main);
+        }
+
+        .session-item.active {
+            background: rgba(168, 85, 247, 0.12);
+            color: #FFFFFF;
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            box-shadow: 0 4px 10px rgba(168, 85, 247, 0.05);
+        }
+
+        .chat-main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 1rem 1.5rem;
+            background: rgba(168, 85, 247, 0.05);
+            border-bottom: 1px solid var(--border-glass-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-header-title {
+            font-size: 0.95rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-header-title span {
+            color: var(--primary-light);
+        }
+
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .chat-area::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .chat-area::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .chat-bubble {
+            max-width: 82%;
+            padding: 1rem 1.25rem;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.55;
+            word-break: break-word;
+            animation: popIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: translateY(8px) scale(0.98);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .chat-bubble.bot {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .chat-bubble.user {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: #FFFFFF;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.15);
+        }
+
+        .chat-bubble.system {
+            align-self: center;
+            background: rgba(59, 130, 246, 0.1);
+            color: #93C5FD;
+            font-size: 0.85rem;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            text-align: center;
+            border-radius: 12px;
+            padding: 0.6rem 1.2rem;
+        }
+
+        /* 마크다운 스타일 데코레이터 */
+        .chat-bubble p {
+            margin-bottom: 0.5rem;
+        }
+
+        .chat-bubble p:last-child {
+            margin-bottom: 0;
+        }
+
+        .chat-bubble strong {
+            font-weight: 800;
+            color: #FFFFFF;
+        }
+
+        .chat-bubble code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: var(--primary-light);
+        }
+
+        .chat-bubble ul,
+        .chat-bubble ol {
+            margin-left: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .chat-bubble li {
+            margin-bottom: 0.25rem;
+        }
+
+        .chat-bubble blockquote {
+            border-left: 3px solid var(--primary-light);
+            background: rgba(255, 255, 255, 0.02);
+            padding: 6px 10px;
+            margin: 0.5rem 0;
+            border-radius: 4px;
+            font-style: italic;
+        }
+
+        .chat-input-area {
+            padding: 1.2rem;
+            border-top: 1px solid var(--border-glass-light);
+            background: rgba(10, 10, 20, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .quick-chips {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .quick-chips::-webkit-scrollbar {
+            height: 0px;
+        }
+
+        .quick-chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass-light);
+            padding: 5px 12px;
+            border-radius: 14px;
+            font-size: 0.78rem;
+            color: var(--text-sub);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            font-weight: 700;
+        }
+
+        .quick-chip:hover {
+            background: rgba(168, 85, 247, 0.1);
+            color: #FFFFFF;
+            border-color: var(--border-glass);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass-light);
+            padding: 12px 18px;
+            border-radius: 12px;
+            color: #FFFFFF;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: border-color 0.25s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary);
+        }
+
+        .chat-send-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
+            transition: 0.25s;
+        }
+
+        .chat-send-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.03);
+        }
+
+        /* AI 정보패널 (우측) */
+        .info-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            overflow-y: auto;
+        }
+
+        .info-panel::-webkit-scrollbar {
+            width: 0px;
+        }
+
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass-light);
+            border-radius: var(--radius-item);
+            padding: 1.2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header-sm {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: var(--primary-light);
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .profile-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.6rem;
+        }
+
+        .summary-pill {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.6rem;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .summary-lbl {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .summary-val {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .books-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .books-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .books-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+        }
+
+        .mini-book-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0.8rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+        }
+
+        .mini-book-name {
+            font-weight: 700;
+            font-size: 0.82rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 70%;
+        }
+
+        .mini-book-prog {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        /* ------------------------------------------------------------- */
+        /* 2. 모의고사 성적 추이 분석관 (Grade Tracker) */
+        /* ------------------------------------------------------------- */
+        .grade-layout {
+            display: grid;
+            grid-template-columns: 1.1fr 1.9fr;
+            width: 100%;
+            height: 100%;
+            gap: 1.5rem;
+            overflow: hidden;
+        }
+
+        .grade-left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .grade-left-panel::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .grade-left-panel::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.6rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .form-row.single {
+            grid-template-columns: 1fr;
+        }
+
+        .form-grp {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-grp label {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: var(--text-sub);
+            text-transform: uppercase;
+        }
+
+        .form-val-input,
+        .form-val-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass-light);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: #FFFFFF;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .form-val-input:focus,
+        .form-val-select:focus {
+            border-color: var(--primary-light);
+        }
+
+        .btn-submit-grade {
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 0.7rem;
+            border-radius: 8px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
+            transition: 0.25s;
+        }
+
+        .btn-submit-grade:hover {
+            transform: translateY(-1px);
+        }
+
+        .exam-history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .exam-history-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-glass-light);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .exam-history-title {
+            font-weight: 800;
+            font-size: 0.88rem;
+        }
+
+        .exam-history-subtext {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .exam-history-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .exam-action-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-sub);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+
+        .exam-action-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--primary-light);
+        }
+
+        .exam-action-btn.delete:hover {
+            color: #EF4444;
+        }
+
+        .grade-right-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-box);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+        }
+
+        .grade-right-panel::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .grade-right-panel::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 250px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.01);
+            border-radius: 12px;
+            border: 1px dashed rgba(255, 255, 255, 0.05);
+            padding: 0.8rem;
+        }
+
+        .report-section {
+            border-top: 1px solid var(--border-glass-light);
+            padding-top: 1.2rem;
+        }
+
+        .report-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--primary-light);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .report-content {
+            font-size: 0.88rem;
+            line-height: 1.6;
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 1rem;
+            border-radius: 12px;
+        }
+
+        /* ------------------------------------------------------------- */
+        /* 3. 집중 부스트 타이머 (Focus Timer) */
+        /* ------------------------------------------------------------- */
+        .timer-grid {
+            display: grid;
+            grid-template-columns: 1.6fr 1.4fr;
+            width: 100%;
+            height: 100%;
+            gap: 1.5rem;
+        }
+
+        .timer-main-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-box);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .timer-display {
+            font-family: 'Outfit', sans-serif !important;
+            font-size: 6.5rem;
+            font-weight: 900;
+            letter-spacing: -2px;
+            line-height: 1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #FFFFFF, rgba(255, 255, 255, 0.4));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 20px rgba(255, 255, 255, 0.05);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-exam-label {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--primary-light);
+            margin-bottom: 2rem;
+            background: rgba(168, 85, 247, 0.1);
+            padding: 5px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(168, 85, 247, 0.2);
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .timer-btn {
+            background: transparent;
+            border: 1px solid var(--border-glass-light);
+            color: var(--text-main);
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s;
+        }
+
+        .timer-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .timer-btn.primary {
+            background: #FFFFFF;
+            color: var(--bg-dark);
+            border: none;
+            width: 72px;
+            height: 72px;
+            box-shadow: 0 8px 24px rgba(255, 255, 255, 0.15);
+        }
+
+        .timer-btn.primary:hover {
+            transform: scale(1.04);
+            box-shadow: 0 12px 30px rgba(255, 255, 255, 0.25);
+            background: #FFFFFF;
+        }
+
+        .timer-btn.danger {
+            color: #EF4444;
+        }
+
+        .timer-btn.danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .timer-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .timer-settings-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            overflow-y: auto;
+        }
+
+        .timer-settings-panel::-webkit-scrollbar {
+            width: 0px;
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.6rem;
+        }
+
+        .preset-btn {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-glass-light);
+            border-radius: 12px;
+            padding: 1rem 0.8rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.25s;
+        }
+
+        .preset-btn:hover {
+            background: rgba(168, 85, 247, 0.05);
+            border-color: var(--border-glass);
+            transform: translateY(-1.5px);
+        }
+
+        .preset-title {
+            font-weight: 800;
+            font-size: 0.88rem;
+            color: var(--text-main);
+            margin-bottom: 2px;
+        }
+
+        .preset-time {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            font-weight: 700;
+        }
+
+        .noise-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem 1.2rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-glass-light);
+            border-radius: 12px;
+            margin-bottom: 0.6rem;
+            transition: all 0.2s;
+        }
+
+        .noise-item:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .noise-item.active {
+            background: rgba(59, 130, 246, 0.05);
+            border-color: var(--accent);
+        }
+
+        .noise-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .noise-icon {
+            font-size: 1.3rem;
+        }
+
+        .noise-name {
+            font-weight: 800;
+            font-size: 0.88rem;
+        }
+
+        .noise-play-btn {
+            background: transparent;
+            border: 1px solid var(--border-glass-light);
+            color: var(--text-sub);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .noise-item.active .noise-play-btn {
+            background: var(--accent);
+            color: #FFFFFF;
+            border-color: transparent;
+        }
+
+        /* ------------------------------------------------------------- */
+        /* 모달 (오버레이 및 카드) */
+        /* ------------------------------------------------------------- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 5, 15, 0.6);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: rgba(15, 15, 25, 0.85);
+            border: 1px solid var(--border-glass);
+            padding: 2.2rem;
+            width: 460px;
+            border-radius: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            transform: scale(0.95) translateY(12px);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #FFFFFF;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-sub);
+            cursor: pointer;
+            font-size: 1.4rem;
+            transition: 0.2s;
+        }
+
+        .modal-close:hover {
+            color: #FFFFFF;
+            transform: rotate(90deg);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.6rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-cancel,
+        .btn-save {
+            padding: 0.65rem 1.25rem;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.88rem;
+            transition: 0.2s;
+        }
+
+        .btn-cancel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass-light);
+            color: var(--text-sub);
+        }
+
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #FFFFFF;
+        }
+
+        .btn-save {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .btn-save:hover {
+            background: var(--primary-dark);
+        }
+
+        /* ☀️ Light Theme Styling Variables & Rules */
+        body.light-theme {
+            --bg-dark: #F8FAFC;
+            /* 회색조를 전면 배제한 맑고 산뜻한 순백색 메인 배경 */
+            --primary: #2563EB;
+            /* 청명한 로열 블루 */
+            --primary-dark: #1D4ED8;
+            --primary-light: #3B82F6;
+            /* 스카이 블루 */
+            --accent: #0EA5E9;
+            /* 하늘색 */
+            --accent-dark: #0284C7;
+            --text-main: #0F172A;
+            /* 가독성 극대화된 진한 차콜 딥 네이비 */
+            --text-sub: #1E293B;
+            /* 진한 서브 텍스트 */
+            --text-muted: #3B82F6;
+            /* 산뜻한 파란색 포인트 */
+            --border-glass: rgba(37, 99, 235, 0.2);
+            --border-glass-light: rgba(37, 99, 235, 0.1);
+            --bg-card: #FFFFFF;
+            /* 투명도를 걷어낸 불투명 순백색 카드로 겹침 회색조 원천 배제! */
+        }
+
+        /* 라이트 모드 메인 레이아웃 겹침 회색 걷어내기 */
+        body.light-theme .main-content {
+            background: #F8FAFC !important;
+        }
+
+        body.light-theme header {
+            background: #FFFFFF !important;
+            border-bottom: 1px solid rgba(37, 99, 235, 0.12) !important;
+            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.02) !important;
+        }
+
+        body.light-theme .header-title-area p {
+            color: #475569 !important;
+            font-weight: 700;
+        }
+
+        /* 라이트 모드 전용 청량한 블루/스카이블루 그라데이션 백그라운드 아우라 */
+        body.light-theme .shape-1 {
+            background: radial-gradient(circle, #DBEAFE 0%, rgba(219, 234, 254, 0) 70%);
+            opacity: 0.7;
+        }
+
+        body.light-theme .shape-2 {
+            background: radial-gradient(circle, #E0F2FE 0%, rgba(224, 242, 254, 0) 70%);
+            opacity: 0.7;
+        }
+
+        body.light-theme .shape-3 {
+            background: radial-gradient(circle, #E0F2FE 0%, rgba(224, 242, 254, 0) 70%);
+            opacity: 0.4;
+        }
+
+        body.light-theme .header-title-area h2 {
+            background: linear-gradient(90deg, #1E3A8A, #0284C7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        body.light-theme .chat-bubble.bot {
+            background: #F1F5F9 !important;
+            /* 가독성 높은 부드러운 화이트 블루 챗 버블 */
+            border: 1px solid rgba(37, 99, 235, 0.15) !important;
+            color: #0F172A !important;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.02) !important;
+        }
+
+        body.light-theme .chat-bubble.bot strong {
+            color: #1D4ED8 !important;
+            font-weight: 800;
+        }
+
+        body.light-theme .chat-input-area {
+            background: #FFFFFF !important;
+            /* 입력 영역 화사한 순백색 */
+            border-top: 1px solid rgba(37, 99, 235, 0.12) !important;
+        }
+
+        body.light-theme .chat-input,
+        body.light-theme .form-val-input,
+        body.light-theme .form-val-select {
+            background: #F8FAFC !important;
+            color: #0F172A !important;
+            border-color: rgba(37, 99, 235, 0.2) !important;
+        }
+
+        body.light-theme .chat-input:focus,
+        body.light-theme .form-val-input:focus,
+        body.light-theme .form-val-select:focus {
+            border-color: #2563EB !important;
+            background: #FFFFFF !important;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+        }
+
+        body.light-theme .quick-chip {
+            background: #FFFFFF !important;
+            border-color: rgba(37, 99, 235, 0.25) !important;
+            color: #1E3A8A !important;
+            /* 글씨 진하게 */
+            font-weight: 800;
+        }
+
+        body.light-theme .quick-chip:hover {
+            background: #EFF6FF !important;
+            color: #2563EB !important;
+            border-color: #2563EB !important;
+        }
+
+        body.light-theme .side-nav {
+            background: #FFFFFF !important;
+            border-right: 1px solid rgba(37, 99, 235, 0.12) !important;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.02) !important;
+        }
+
+        body.light-theme .nav-item {
+            color: #475569 !important;
+            font-weight: 700;
+        }
+
+        body.light-theme .nav-item:hover {
+            color: #2563EB !important;
+        }
+
+        body.light-theme .nav-item.active {
+            color: #2563EB !important;
+            font-weight: 800;
+        }
+
+        body.light-theme .nav-item.active::before {
+            background: #2563EB !important;
+            box-shadow: 0 0 8px rgba(37, 99, 235, 0.4) !important;
+        }
+
+        body.light-theme .desk-selector {
+            background: #F1F5F9 !important;
+            /* 맑은 하늘색 틴트 배경 */
+            border: 1px solid rgba(37, 99, 235, 0.12) !important;
+        }
+
+        body.light-theme .desk-btn {
+            color: #475569 !important;
+            font-weight: 800;
+            opacity: 0.8;
+        }
+
+        body.light-theme .desk-btn.active {
+            background: #2563EB !important;
+            /* 활성 탭: 진한 로열블루 블록 배경! */
+            color: #FFFFFF !important;
+            opacity: 1;
+            border: none;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15) !important;
+        }
+
+        body.light-theme .summary-pill {
+            background: #F1F5F9 !important;
+            border-color: rgba(37, 99, 235, 0.12) !important;
+        }
+
+        body.light-theme .summary-lbl {
+            color: #475569 !important;
+            font-weight: 800;
+        }
+
+        body.light-theme .summary-val {
+            color: #1D4ED8 !important;
+            font-weight: 900;
+        }
+
+        body.light-theme .mini-book-item {
+            background: #F1F5F9 !important;
+            border-color: rgba(37, 99, 235, 0.1) !important;
+        }
+
+        body.light-theme .mini-book-name {
+            color: #0F172A !important;
+        }
+
+        body.light-theme .mini-book-prog {
+            color: #2563EB !important;
+        }
+
+        body.light-theme .exam-history-item {
+            background: #F8FAFC !important;
+            border-color: rgba(37, 99, 235, 0.15) !important;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.02) !important;
+        }
+
+        body.light-theme .exam-history-title {
+            color: #0F172A !important;
+        }
+
+        body.light-theme .exam-history-subtext {
+            color: #2563EB !important;
+            font-weight: 700;
+        }
+
+        body.light-theme .card-header-sm {
+            color: #1E3A8A !important;
+            font-weight: 900;
+            font-size: 0.95rem;
+        }
+
+        body.light-theme .glass-card {
+            background: #FFFFFF !important;
+            border: 1px solid rgba(37, 99, 235, 0.12) !important;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.03) !important;
+        }
+
+        body.light-theme .info-panel .glass-card div {
+            color: #1E293B !important;
+            /* 가이드라인 등 다크 블루 계열 적용 */
+            font-weight: 600;
+        }
+
+        body.light-theme .timer-display {
+            background: linear-gradient(135deg, #2563EB, #0EA5E9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        body.light-theme .preset-btn {
+            background: #FFFFFF !important;
+            border-color: rgba(37, 99, 235, 0.12) !important;
+        }
+
+        body.light-theme .preset-btn:hover {
+            background: #EFF6FF !important;
+            border-color: #2563EB !important;
+        }
+
+        body.light-theme .noise-item {
+            background: #FFFFFF !important;
+            border-color: rgba(37, 99, 235, 0.12) !important;
+        }
+
+        body.light-theme .noise-item.active {
+            background: #EFF6FF !important;
+            border-color: #0EA5E9 !important;
+        }
+
+        body.light-theme .noise-play-btn {
+            border-color: rgba(37, 99, 235, 0.22) !important;
+            color: #0EA5E9 !important;
+        }
+
+        body.light-theme .modal-content {
+            background: #FFFFFF !important;
+            color: #0F172A !important;
+            border-color: rgba(37, 99, 235, 0.25) !important;
+            box-shadow: 0 20px 40px rgba(37, 99, 235, 0.08) !important;
+        }
+
+        body.light-theme .modal-title {
+            color: #0F172A !important;
+        }
+
+        body.light-theme .btn-cancel {
+            background: #F1F5F9 !important;
+            /* 회색 대신 아주 화사한 하늘색 취소 버튼 */
+            border-color: rgba(37, 99, 235, 0.18) !important;
+            color: #475569 !important;
+        }
+
+        body.light-theme .btn-cancel:hover {
+            background: #E2E8F0 !important;
+            color: #0F172A !important;
+        }
+
+        body.light-theme .timer-btn {
+            border-color: rgba(37, 99, 235, 0.22) !important;
+            color: #2563EB !important;
+        }
+
+        body.light-theme .timer-btn:hover {
+            background: #EFF6FF !important;
+        }
+
+        body.light-theme .timer-btn.primary {
+            background: #2563EB !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25) !important;
+        }
+
+        /* 대화 세션 보관함 라이트 모드 오버라이드 (회색 제로화 & 진한 글자색) */
+        body.light-theme .chat-sessions-sidebar {
+            background: #FFFFFF !important;
+            border-right: 1px solid rgba(37, 99, 235, 0.12) !important;
+        }
+
+        body.light-theme .sessions-sidebar-header {
+            background: #F1F5F9 !important;
+            color: #1E3A8A !important;
+            border-bottom: 1px solid rgba(37, 99, 235, 0.12) !important;
+        }
+
+        body.light-theme .btn-add-session {
+            color: #2563EB !important;
+        }
+
+        body.light-theme .btn-add-session:hover {
+            background: rgba(37, 99, 235, 0.1) !important;
+            color: #1D4ED8 !important;
+        }
+
+        body.light-theme .session-item {
+            color: #475569 !important;
+            font-weight: 700;
+        }
+
+        body.light-theme .session-item:hover {
+            background: rgba(37, 99, 235, 0.05) !important;
+            color: #1E3A8A !important;
+        }
+
+        body.light-theme .session-item.active {
+            background: #EFF6FF !important;
+            color: #2563EB !important;
+            border-color: rgba(37, 99, 235, 0.18) !important;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.06) !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <div id="loadingScreen">
+        <div class="loader-logo">ONAgent2SNU27</div>
+        <div style="font-size: 0.95rem; font-weight: 600; color: var(--text-sub);">AI 에이전트 동기화 중...</div>
+    </div>
+
+    <div class="app-wrapper">
+
+        <!-- 좌측 프리미엄 내비게이션 바 -->
+        <nav class="side-nav">
+            <div class="nav-brand" onclick="location.href='ONStudy2SNU27.html'">O.</div>
+            <div class="nav-menu">
+                <a class="nav-item" href="ONStudy2SNU27.html">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                    <span class="nav-text">플래너</span>
+                </a>
+                <a class="nav-item" href="ONPlan2SNU27.html">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <span class="nav-text">스케줄러</span>
+                </a>
+                <div class="nav-item active">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path
+                            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                        <line x1="12" y1="22.08" x2="12" y2="12" />
+                    </svg>
+                    <span class="nav-text">AI에이전트</span>
+                </div>
+            </div>
+            <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 800;">ONFINE</div>
+        </nav>
+
+        <!-- 메인 작업대 -->
+        <div class="main-content">
+            <header>
+                <div class="header-title-area">
+                    <h2>AI Study Agent</h2>
+                    <p>2027학년도 서울대 합격을 위한 나만의 인텔리전트 AI 가이드</p>
+                </div>
+                <div class="header-right">
+                    <div class="desk-selector">
+                        <button class="desk-btn active" onclick="switchDesk('mentor')">AI Mentor</button>
+                        <button class="desk-btn" onclick="switchDesk('grade')">Grade Tracker</button>
+                        <button class="desk-btn" onclick="switchDesk('timer')">Boost Timer</button>
+                    </div>
+
+                    <button id="themeToggleBtn" class="profile-trigger"
+                        style="background: rgba(255, 255, 255, 0.08); color: var(--text-main); border: 1px solid var(--border-glass-light);"
+                        onclick="toggleThemeMode()">
+                        <span>🌙</span> <span id="themeToggleText">Dark Mode</span>
+                    </button>
+                    <button class="profile-trigger" onclick="openModal('profileModal')">
+                        <span>👤</span> <span id="btnProfileText">과목 & 목표 설정</span>
+                    </button>
+                    <button class="profile-trigger" style="background: rgba(168, 85, 247, 0.15); border: 1px solid var(--border-glass);" onclick="openModal('apiSettingsModal')">
+                        <span>⚙️</span> <span>API 설정</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- 1. AI 멘토링 데스크 (AI Mentor) -->
+            <main id="desk-mentor" class="workspace-panel active">
+                <div class="mentor-grid">
+                    <div class="chat-container">
+                        <!-- 대화 세션 보관함 (사이드바) -->
+                        <div class="chat-sessions-sidebar">
+                            <div class="sessions-sidebar-header">
+                                <span>📁 대화 보관함</span>
+                                <button class="btn-add-session" onclick="createNewChatSession()"
+                                    title="새 대화방 추가">+</button>
+                            </div>
+                            <div id="sessionsList" class="sessions-list">
+                                <!-- JS에서 동적 렌더링 -->
+                            </div>
+                        </div>
+
+                        <!-- 챗 메인 대화창 -->
+                        <div class="chat-main-area">
+                            <div class="chat-header">
+                                <div class="chat-header-title">
+                                    <span>✨</span> <span id="currentSessionTitle">기본 대화방</span>
+                                </div>
+                                <div class="chat-header-actions" style="display: flex; gap: 6px;">
+                                    <button class="quick-chip"
+                                        style="background:rgba(59, 130, 246, 0.15); border-color:rgba(59, 130, 246, 0.3); color:#93C5FD;"
+                                        onclick="renameCurrentSession()">방 이름 변경</button>
+                                    <button class="quick-chip"
+                                        style="background:rgba(239, 68, 68, 0.15); border-color:rgba(239, 68, 68, 0.3); color:#FCA5A5;"
+                                        onclick="deleteCurrentSession()">방 삭제</button>
+                                </div>
+                            </div>
+                            <div class="chat-area" id="chatArea">
+                                <!-- 채팅 내용 렌더링 영역 -->
+                            </div>
+                            <div class="chat-input-area">
+                                <div class="quick-chips">
+                                    <button class="quick-chip" onclick="applyQuickPrompt('국어 비문학 구조독해법 알려줘')">💡 국어 비문학
+                                        독해법</button>
+                                    <button class="quick-chip" onclick="applyQuickPrompt('수학 4점짜리 기출문제 분석 접근 5단계')">💡
+                                        수학 4점
+                                        분석 5단계</button>
+                                    <button class="quick-chip" onclick="applyQuickPrompt('영어 빈칸추론 킬러 지문 극복 꿀팁')">💡 영어
+                                        빈칸 극복
+                                        꿀팁</button>
+                                    <button class="quick-chip" onclick="applyQuickPrompt('수능 D-Day 마인드셋 유지하는 방법')">💡
+                                        마인드셋
+                                        마인드 컨트롤</button>
+                                    <button class="quick-chip" onclick="applyQuickPrompt('주간 오답노트 완벽하게 작성하는 정석 방식')">💡
+                                        오답노트
+                                        작성 정석</button>
+                                </div>
+
+
+
+                                <div class="input-row">
+                                    <input type="text" id="chatInput" class="chat-input"
+                                        placeholder="학습 질문, 수능 계획, 멘탈 고민 등을 편하게 질문해보세요..."
+                                        onkeypress="if(event.key === 'Enter') sendChatMessage()">
+                                    <button class="chat-send-btn" onclick="sendChatMessage()">➤</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 우측 리포트 및 상태 요약 판넬 -->
+                    <aside class="info-panel">
+                        <div class="glass-card">
+                            <div class="card-header-sm">Target Profile</div>
+                            <div class="profile-summary-grid">
+                                <div class="summary-pill">
+                                    <span class="summary-lbl">목표 대학</span>
+                                    <span class="summary-val" id="sumUniv">설정 안 됨</span>
+                                </div>
+                                <div class="summary-pill">
+                                    <span class="summary-lbl">학과</span>
+                                    <span class="summary-val" id="sumDept">설정 안 됨</span>
+                                </div>
+                                <div class="summary-pill">
+                                    <span class="summary-lbl">국어 선택</span>
+                                    <span class="summary-val" id="sumKor">선택 안 됨</span>
+                                </div>
+                                <div class="summary-pill">
+                                    <span class="summary-lbl">수학 선택</span>
+                                    <span class="summary-val" id="sumMath">선택 안 됨</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card">
+                            <div class="card-header-sm">Study Tracker Status</div>
+                            <div class="books-list" id="miniBooksList">
+                                <div
+                                    style="text-align:center; color:var(--text-muted); font-size:0.8rem; padding: 2rem 0;">
+                                    문제집 정보가 없습니다.</div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card">
+                            <div class="card-header-sm">AI Agent Guideline</div>
+                            <div style="font-size:0.82rem; line-height:1.55; color:var(--text-sub);">
+                                수능 대비 AI 에이전트는 사용자의 **목표 설정, 문제집 진도, 모의고사 성적 추이**를 다차원 분석하여 실시간 튜터링을 제공합니다.<br><br>
+                                💡 왼쪽의 **모의고사 분석관**에 성적을 기입하면 취약 단원에 대한 특화 리포트를 자동으로 조립해 줍니다.
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </main>
+
+            <!-- 2. 모의고사 성적 추이 분석관 (Grade Tracker) -->
+            <main id="desk-grade" class="workspace-panel">
+                <div class="grade-layout" style="display: flex; flex-direction: column; width: 100%; height: 100%;">
+                    <!-- 성적 분석 서브 탭 (모의고사 vs 내신) -->
+                    <div style="display: flex; gap: 10px; margin-bottom: 1.2rem; flex-shrink: 0;">
+                        <button id="btnGradeCSATTab" class="desk-btn active"
+                            style="border: 1px solid var(--border-glass-light); padding: 6px 16px; font-size: 0.82rem; font-weight: 800; border-radius: 8px; cursor: pointer; transition: 0.2s;"
+                            onclick="switchGradeSubTab('csat')">수능 / 모의고사 성적</button>
+                        <button id="btnGradeGPATab" class="desk-btn"
+                            style="border: 1px solid var(--border-glass-light); padding: 6px 16px; font-size: 0.82rem; font-weight: 800; border-radius: 8px; cursor: pointer; transition: 0.2s;"
+                            onclick="switchGradeSubTab('gpa')">고교 내신 성적</button>
+                    </div>
+
+                    <div
+                        style="display: grid; grid-template-columns: 1.1fr 1.9fr; gap: 1.5rem; flex: 1; overflow: hidden; min-height: 0; width:100%;">
+                        <div class="grade-left-panel"
+                            style="display: flex; flex-direction: column; gap: 1.2rem; overflow-y: auto; height:100%;">
+                            <!-- 모의고사 성적 기입 폼 (CSAT) -->
+                            <div id="csatFormCard" class="glass-card">
+                                <div class="card-header-sm">모의고사 성적 기입</div>
+                                <form id="gradeForm" onsubmit="saveGrade(event)">
+                                    <div class="form-row">
+                                        <div class="form-grp">
+                                            <label>시험명 선택</label>
+                                            <select id="examName" class="form-val-select" required>
+                                                <option value="3월 학평">3월 학력평가</option>
+                                                <option value="5월 학평">5월 학력평가</option>
+                                                <option value="6월 모평">6월 모의평가</option>
+                                                <option value="7월 학평">7월 학력평가</option>
+                                                <option value="9월 모평">9월 모의평가</option>
+                                                <option value="10월 학평">10월 학력평가</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-grp">
+                                            <label>시험 연도</label>
+                                            <input type="text" id="examYear" class="form-val-input" value="2026"
+                                                required>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-grp">
+                                            <label>국어 등급 / 표준점수</label>
+                                            <input type="text" id="gradeKor" class="form-val-input"
+                                                placeholder="등급 / 표점 (예: 1/134)" required>
+                                        </div>
+                                        <div class="form-grp">
+                                            <label>수학 등급 / 표준점수</label>
+                                            <input type="text" id="gradeMath" class="form-val-input"
+                                                placeholder="등급 / 표점 (예: 2/130)" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-grp">
+                                            <label>영어 등급</label>
+                                            <input type="number" id="gradeEng" class="form-val-input" min="1" max="9"
+                                                placeholder="등급 (예: 1)" required>
+                                        </div>
+                                        <div class="form-grp">
+                                            <label>한국사 등급</label>
+                                            <input type="number" id="gradeHist" class="form-val-input" min="1" max="9"
+                                                placeholder="등급 (예: 1)" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-grp">
+                                            <label>탐구1 과목 / 등급</label>
+                                            <input type="text" id="gradeSub1" class="form-val-input"
+                                                placeholder="생명Ⅰ / 1" required>
+                                        </div>
+                                        <div class="form-grp">
+                                            <label>탐구2 과목 / 등급</label>
+                                            <input type="text" id="gradeSub2" class="form-val-input"
+                                                placeholder="지학Ⅰ / 2" required>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn-submit-grade">성적 저장 및 AI 분석 요청</button>
+                                </form>
+                            </div>
+
+                            <!-- 내신 성적 기입 폼 (GPA) -->
+                            <div id="gpaFormCard" class="glass-card" style="display: none;">
+                                <div class="card-header-sm">학기별 내신 성적 기입</div>
+                                <form id="gpaForm" onsubmit="saveGPA(event)">
+                                    <div class="form-row">
+                                        <div class="form-grp">
+                                            <label>학기 선택</label>
+                                            <select id="gpaSemester" class="form-val-select" required>
+                                                <option value="1학년 1학기">1학년 1학기 (1-1)</option>
+                                                <option value="1학년 2학기">1학년 2학기 (1-2)</option>
+                                                <option value="2학년 1학기">2학년 1학기 (2-1)</option>
+                                                <option value="2학년 2학기">2학년 2학기 (2-2)</option>
+                                                <option value="3학년 1학기">3학년 1학기 (3-1)</option>
+                                                <option value="3학년 2학기">3학년 2학기 (3-2)</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-grp">
+                                            <label>평균 등급 (GPA)</label>
+                                            <input type="number" id="gpaAverage" class="form-val-input" min="1.00"
+                                                max="9.00" step="0.01" placeholder="예: 1.25" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-grp">
+                                            <label>국어 등급</label>
+                                            <input type="number" id="gpaKor" class="form-val-input" min="1" max="9"
+                                                step="1" placeholder="예: 1">
+                                        </div>
+                                        <div class="form-grp">
+                                            <label>수학 등급</label>
+                                            <input type="number" id="gpaMath" class="form-val-input" min="1" max="9"
+                                                step="1" placeholder="예: 2">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-grp">
+                                            <label>영어 등급</label>
+                                            <input type="number" id="gpaEng" class="form-val-input" min="1" max="9"
+                                                step="1" placeholder="예: 1">
+                                        </div>
+                                        <div class="form-grp">
+                                            <label>사회/과학 등급</label>
+                                            <input type="number" id="gpaSubj" class="form-val-input" min="1" max="9"
+                                                step="1" placeholder="예: 2">
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn-submit-grade"
+                                        style="background: linear-gradient(90deg, var(--accent), var(--accent-dark));">내신
+                                        성적 저장 및 분석</button>
+                                </form>
+                            </div>
+
+                            <!-- 시험 기록 이력 (수능 vs 내신 통합형) -->
+                            <div class="glass-card"
+                                style="flex:1; display: flex; flex-direction: column; overflow: hidden; min-height: 0;">
+                                <div class="card-header-sm" id="historyCardHeader">모의고사 기입 이력</div>
+                                <div class="exam-history-list" id="examHistoryList" style="flex: 1; overflow-y: auto;">
+                                    <div
+                                        style="text-align:center; color:var(--text-muted); font-size:0.8rem; padding: 2rem 0;">
+                                        등록된 성적이 없습니다.</div>
+                                </div>
+                                <div class="exam-history-list" id="gpaHistoryList"
+                                    style="flex: 1; overflow-y: auto; display: none;">
+                                    <div
+                                        style="text-align:center; color:var(--text-muted); font-size:0.8rem; padding: 2rem 0;">
+                                        등록된 내신 성적이 없습니다.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 우측 성적 분석 시각화 및 리포트 카드 (수능 vs 내신에 대응) -->
+                        <div class="grade-right-panel"
+                            style="flex:1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; height:100%;">
+                            <div class="card-header-sm" id="chartCardHeader">2027 수능 등급 추이 시각화 (Mock Exam Chart)</div>
+                            <div class="chart-container" id="chartWrapper" style="flex-shrink: 0;">
+                                <canvas id="gradeChart" style="width:100%; height:100%;"></canvas>
+                            </div>
+
+                            <div class="report-section" style="flex: 1; overflow-y: auto; min-height: 0;">
+                                <div class="report-title" id="reportTitle">
+                                    <span>📋</span> AI 수능 취약성 정밀 분석 보고서
+                                </div>
+                                <div class="report-content" id="aiDiagnosticReport">
+                                    성적을 1개 이상 등록하면 AI가 전반적인 학습 등급 추이를 계산하여 취약점 보강 포인트를 생성합니다.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- 3. 집중 부스트 타이머 (Focus Timer) -->
+            <main id="desk-timer" class="workspace-panel">
+                <div class="timer-grid">
+                    <div class="timer-main-card">
+                        <div class="timer-exam-label" id="examLabel">국어 영역 (1교시)</div>
+                        <div class="timer-display" id="timeDisplay">80:00</div>
+                        <div class="timer-controls">
+                            <button class="timer-btn danger" onclick="resetTimer()" title="초기화">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"
+                                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                        stroke-linejoin="round" fill="none" />
+                                </svg>
+                            </button>
+                            <button class="timer-btn primary" id="playBtn" onclick="toggleTimer()" title="시작/정지">
+                                <svg id="playIcon" viewBox="0 0 24 24">
+                                    <polygon points="5 3 19 12 5 21 5 3" />
+                                </svg>
+                            </button>
+                            <button class="timer-btn" id="soundVolumeBtn" onclick="toggleSoundGlobal()"
+                                title="백색소음 음소거">
+                                <svg id="volumeIcon" viewBox="0 0 24 24">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" fill="none" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="timer-settings-panel">
+                        <!-- 수능 프리셋 시간 설정 -->
+                        <div class="glass-card">
+                            <div class="card-header-sm">수능 교시별 시험시간 프리셋</div>
+                            <div class="preset-grid">
+                                <button class="preset-btn" onclick="applyPreset('국어 영역 (1교시)', 80)">
+                                    <div class="preset-title">1교시 국어 영역</div>
+                                    <div class="preset-time">80분 (08:40 ~ 10:00)</div>
+                                </button>
+                                <button class="preset-btn" onclick="applyPreset('수학 영역 (2교시)', 100)">
+                                    <div class="preset-title">2교시 수학 영역</div>
+                                    <div class="preset-time">100분 (10:30 ~ 12:10)</div>
+                                </button>
+                                <button class="preset-btn" onclick="applyPreset('영어 영역 (3교시)', 70)">
+                                    <div class="preset-title">3교시 영어 영역</div>
+                                    <div class="preset-time">70분 (13:10 ~ 14:20)</div>
+                                </button>
+                                <button class="preset-btn" onclick="applyPreset('한국사 & 탐구 (4교시)', 102)">
+                                    <div class="preset-title">4교시 한국사 & 탐구</div>
+                                    <div class="preset-time">102분 (14:50 ~ 16:37)</div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 고품격 브라우저 합성 백색소음 -->
+                        <div class="glass-card">
+                            <div class="card-header-sm">합성 백색소음 (Web Audio Synth)</div>
+                            <div class="noise-item" id="noise-brown">
+                                <div class="noise-info">
+                                    <span class="noise-icon">📖</span>
+                                    <div class="noise-name">독서실 집중 Brown Noise</div>
+                                </div>
+                                <button class="noise-play-btn" onclick="toggleNoise('brown')">▶</button>
+                            </div>
+                            <div class="noise-item" id="noise-rain">
+                                <div class="noise-info">
+                                    <span class="noise-icon">🌧️</span>
+                                    <div class="noise-name">창가 빗소리 (Synthetic Rain)</div>
+                                </div>
+                                <button class="noise-play-btn" onclick="toggleNoise('rain')">▶</button>
+                            </div>
+                            <div class="noise-item" id="noise-binaural">
+                                <div class="noise-info">
+                                    <span class="noise-icon">🧠</span>
+                                    <div class="noise-name">뇌파 동조 바이노럴 비트 (Alpha)</div>
+                                </div>
+                                <button class="noise-play-btn" onclick="toggleNoise('binaural')">▶</button>
+                            </div>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:8px; line-height:1.4;">
+                                💡 브라우저가 직접 실시간 합성 음파를 생성합니다. 외부 오디오 리소스 다운로드 없이 깨끗하게 재생됩니다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 설정 모달 -->
+    <div id="profileModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">수능 목표 및 과목 설정</div>
+                <button class="modal-close" onclick="closeModal('profileModal')">×</button>
+            </div>
+            <div class="form-grp" style="margin-bottom:1rem;">
+                <label>목표 대학</label>
+                <input type="text" id="profUniv" class="form-val-input" placeholder="예: 서울대학교">
+            </div>
+            <div class="form-grp" style="margin-bottom:1rem;">
+                <label>학과</label>
+                <input type="text" id="profDept" class="form-val-input" placeholder="예: 컴퓨터공학부">
+            </div>
+            <div class="form-row">
+                <div class="form-grp">
+                    <label>국어 선택과목</label>
+                    <select id="profKor" class="form-val-select">
+                        <option value="선택 안 됨">선택 과목</option>
+                        <option value="언어와 매체">언어와 매체</option>
+                        <option value="화법과 작문">화법과 작문</option>
+                    </select>
+                </div>
+                <div class="form-grp">
+                    <label>수학 선택과목</label>
+                    <select id="profMath" class="form-val-select">
+                        <option value="선택 안 됨">선택 과목</option>
+                        <option value="미적분">미적분</option>
+                        <option value="확률과 통계">확률과 통계</option>
+                        <option value="기하">기하</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal('profileModal')">취소</button>
+                <button class="btn-save" onclick="saveProfile()">저장하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- API 설정 모달 -->
+    <div id="apiSettingsModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">AI 에이전트 API 설정</div>
+                <button class="modal-close" onclick="closeModal('apiSettingsModal')">×</button>
+            </div>
+            <div class="form-grp" style="margin-bottom:1rem;">
+                <label>통신 모드 선택</label>
+                <select id="apiMode" class="form-val-select" onchange="toggleApiModalFields()">
+                    <option value="backend">Render 백엔드 서버 연동 모드 (무료 서버)</option>
+                    <option value="direct">구글 AI Studio API 직접 연결 모드 (초고속)</option>
+                </select>
+            </div>
+            <div id="apiBackendFields" class="form-grp" style="margin-bottom:1rem;">
+                <label>백엔드 서버 URL (Backend API)</label>
+                <input type="text" id="apiBackendUrl" class="form-val-input" placeholder="https://onplan2snu27-backend.onrender.com">
+            </div>
+            <div id="apiDirectFields" class="form-grp" style="margin-bottom:1rem; display:none;">
+                <label>Google AI Studio API Key</label>
+                <input type="password" id="apiUserKey" class="form-val-input" placeholder="AIzaSy...">
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-top:4px; line-height:1.3;">
+                    💡 Google AI Studio에서 발급받은 API 키를 입력하시면, 백엔드 서버 장애나 지연 없이 0.5초만에 응답을 수신하는 초고속 통신이 가능합니다. 키는 암호화되어 안전하게 보관됩니다.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeModal('apiSettingsModal')">취소</button>
+                <button class="btn-save" onclick="saveApiSettings()">설정 저장</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Firebase SDK & JS Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { initializeFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDW4xa4Qn5EI1AGlOyAUHwlB6Dtl3NHxHE",
+            authDomain: "onstudytosnu27-851e8.firebaseapp.com",
+            projectId: "onstudytosnu27-851e8",
+            storageBucket: "onstudytosnu27-851e8.firebasestorage.app",
+            messagingSenderId: "695549162437",
+            appId: "1:695549162437:web:00df6bd6b32db52ee591ac"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+
+        // ✅ initializeFirestore 사용 — 로컬 file:/// 환경 또는 특정 네트워크 방화벽에서
+        // WebChannel(Websocket/Stream) 통신 장애를 우회하기 위해 롱폴링(Long-Polling) 강제 설정
+        const db = initializeFirestore(app, {
+            experimentalForceLongPolling: true,
+            useFetchStreams: false
+        });
+        const USER_DOC_ID = "minchan_data";
+
+        // 하드코딩된 AI 모델 (gemini-3-flash-preview 고정)
+        const AI_MODEL = "gemini-3-flash-preview";
+
+        // 전역 앱 데이터 상태
+        let appData = {
+            dailyPlanner: {},
+            books: [],
+            chatHistory: [], // 기존 싱글 대화방 마이그레이션용 보존
+            chatSessions: [
+                { id: "session_default", name: "기본 대화방", history: [] }
+            ],
+            activeSessionId: "session_default",
+            memos: [],
+            studentProfile: {
+                university: "",
+                department: "",
+                korSubject: "",
+                mathSubject: ""
+            },
+            mockExams: [],
+            schoolGrades: [],
+            apiKey: "" // 구글 AI Studio API Key
+        };
+
+        // 로컬스토리지 백업/오프라인 캐싱 유틸리티
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('ONAgent_appData_cache', JSON.stringify(appData));
+            } catch (e) {
+                console.error("로컬 스토리지 캐시 백업 실패: ", e);
+            }
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const cached = localStorage.getItem('ONAgent_appData_cache');
+                if (cached) {
+                    const data = JSON.parse(cached);
+                    if (data.dailyPlanner) appData.dailyPlanner = data.dailyPlanner;
+                    if (data.books) appData.books = data.books;
+                    if (data.studentProfile) appData.studentProfile = data.studentProfile;
+                    if (data.mockExams) appData.mockExams = data.mockExams;
+                    if (data.schoolGrades) appData.schoolGrades = data.schoolGrades;
+                    if (data.apiKey) appData.apiKey = data.apiKey;
+                    if (data.apiSettings) appData.apiSettings = data.apiSettings;
+                    return true;
+                }
+            } catch (e) {
+                console.error("로컬 캐시 복구 실패: ", e);
+            }
+            return false;
+        }
+
+        // 타이머 상태 변수
+        let timerInterval = null;
+        let timeRemaining = 4800; // 80분 기본
+        let isTimerRunning = false;
+
+        // Web Audio API 오디오 합성 사운드 관리자
+        let audioCtx = null;
+        let activeNoiseSource = null;
+        let activeNoiseType = null; // 'brown', 'rain', 'binaural'
+        let isVolumeMuted = false;
+        let gainNode = null;
+
+        // Canvas 차트 인스턴스
+        let gradeChartInstance = null;
+
+        // 현재 성적 세부 탭 ('csat' 또는 'gpa')
+        let currentGradeSubTab = 'csat';
+
+        // -------------------------------------------------------------
+        // 화면 로딩 및 Real-Time 데이터 바인딩 + 로컬 오프라인 Fallback
+        // -------------------------------------------------------------
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log("🔍 [Firestore] DOMContentLoaded: 앱 로딩 및 데이터 바인딩 시작");
+
+            // 1. 오프라인/보안차단 상황에 대비해 로컬 캐시데이터 1차 즉시 로딩
+            const hasCache = loadFromLocalStorage();
+            console.log(`📂 [Firestore] 로컬 캐시 존재 여부: ${hasCache}`);
+            if (hasCache) {
+                console.log("📂 [Firestore] 로컬 캐시 데이터 로딩 후 화면 1차 렌더링 완료");
+                renderProfileDisplay();
+                renderBooksList();
+                renderExamHistory();
+                renderGPAHistory();
+                drawGradeChart();
+                generateAIDiagnosticReport();
+            }
+
+            // 2. Firestore 실시간 리스너 등록 (onSnapshot 복원)
+            try {
+                console.log(`📡 [Firestore] 실시간 동기화 리스너 등록 중... (경로: users/${USER_DOC_ID})`);
+
+                onSnapshot(doc(db, "users", USER_DOC_ID), (docSnap) => {
+                    console.log("📡 [Firestore] 실시간 업데이트 데이터 감지 및 수신 성공!");
+
+                    // 로딩 스크린 해제
+                    const loadingScreen = document.getElementById('loadingScreen');
+                    if (loadingScreen && loadingScreen.style.display !== 'none') {
+                        loadingScreen.style.opacity = '0';
+                        setTimeout(() => { loadingScreen.style.display = 'none'; }, 500);
+                    }
+
+                    if (!docSnap.exists()) {
+                        console.warn(`⚠️ [Firestore] users/${USER_DOC_ID} 문서가 존재하지 않습니다! 새 사용자로 인식하여 로컬 데이터를 유지합니다.`);
+                        return;
+                    }
+
+                    const data = docSnap.data();
+                    console.log("📦 [Firestore] 실시간 수신된 문서 원본:", data);
+
+                    // 💡 [스마트 하이브리드 병합 정책]
+
+                    // 1. Planner 병합
+                    if (data.dailyPlanner && Object.keys(data.dailyPlanner).length > 0) {
+                        appData.dailyPlanner = data.dailyPlanner;
+                        console.log("🔄 [Planner] 실시간 동기화 완료");
+                    }
+
+                    // 2. Books 병합
+                    if (data.books && data.books.length > 0) {
+                        appData.books = data.books;
+                        console.log("🔄 [Books] 실시간 동기화 완료");
+                    }
+
+                    // 3. Memos 병합
+                    if (data.memos && data.memos.length > 0) {
+                        appData.memos = data.memos;
+                        console.log("🔄 [Memos] 실시간 동기화 완료");
+                    }
+
+                    // 4. 대화방 멀티 세션 병합 (chatSessions 전용)
+                    const serverChatCount = data.chatSessions ? data.chatSessions.reduce((acc, s) => acc + (s.history ? s.history.length : 0), 0) : 0;
+                    const localChatCount = appData.chatSessions ? appData.chatSessions.reduce((acc, s) => acc + (s.history ? s.history.length : 0), 0) : 0;
+
+                    let isChatUpdated = false;
+
+                    if (serverChatCount > 0) {
+                        appData.chatSessions = data.chatSessions;
+                        appData.activeSessionId = data.activeSessionId || data.chatSessions[0].id;
+                        console.log("🔄 [Chat] 🚀 실시간 멀티 세션 대화 히스토리 동기화 완료");
+                        isChatUpdated = true;
+                    } else if (localChatCount > 0) {
+                        console.log("💾 [Chat] 로컬 캐시 대화 기록이 서버보다 우세하므로 로컬 기록 보존");
+                    } else {
+                        appData.chatSessions = [{ id: "session_default", name: "기본 대화방", history: [] }];
+                        appData.activeSessionId = "session_default";
+                        console.log("💬 [Chat] 양측 모두 대화 기록이 없어 기본 대화방으로 초기 구동");
+                    }
+
+                    // 5. 프로필 병합
+                    const isServerProfileFilled = data.studentProfile && (data.studentProfile.university || data.studentProfile.department);
+                    const isLocalProfileFilled = appData.studentProfile && (appData.studentProfile.university || appData.studentProfile.department);
+
+                    if (isServerProfileFilled) {
+                        appData.studentProfile = data.studentProfile;
+                        console.log("🔄 [Profile] 실시간 프로필 동기화 완료");
+                    }
+
+                    // 6. 모의고사 및 내신 성적 병합
+                    if (data.mockExams && data.mockExams.length > 0) {
+                        appData.mockExams = data.mockExams;
+                        console.log("🔄 [MockExams] 실시간 동기화 완료");
+                    }
+
+                    if (data.schoolGrades && data.schoolGrades.length > 0) {
+                        appData.schoolGrades = data.schoolGrades;
+                        console.log("🔄 [SchoolGrades] 실시간 동기화 완료");
+                    }
+
+                    if (data.apiSettings) {
+                        appData.apiSettings = data.apiSettings;
+                        console.log("🔄 [API] 실시간 API 설정 동기화 완료");
+                    }
+
+                    if (data.apiKey) {
+                        appData.apiKey = data.apiKey;
+                    }
+
+                    // 서버에서 누락된 로컬 활성 데이터를 서버로 즉시 업로드하여 싱크 맞춤 (백업 자동화)
+                    const uploadPayload = {};
+                    if (!isServerProfileFilled && isLocalProfileFilled) uploadPayload.studentProfile = appData.studentProfile;
+                    if ((!data.books || data.books.length === 0) && appData.books && appData.books.length > 0) uploadPayload.books = appData.books;
+                    if ((!data.dailyPlanner || Object.keys(data.dailyPlanner).length === 0) && appData.dailyPlanner && Object.keys(appData.dailyPlanner).length > 0) uploadPayload.dailyPlanner = appData.dailyPlanner;
+                    if (!isChatUpdated && localChatCount > 0) {
+                        uploadPayload.chatSessions = appData.chatSessions;
+                        uploadPayload.activeSessionId = appData.activeSessionId;
+                    }
+
+                    if (Object.keys(uploadPayload).length > 0) {
+                        console.log("📤 [Firestore] 로컬에만 존재하는 우세 데이터를 서버로 업로드하여 양방향 동기화 수행:", Object.keys(uploadPayload));
+                        setDoc(doc(db, "users", USER_DOC_ID), uploadPayload, { merge: true })
+                            .then(() => console.info("📤 [Firestore] 양방향 자동 백업 완료!"))
+                            .catch(err => console.error("❌ [Firestore] 양방향 자동 백업 실패:", err));
+                    }
+
+                    // 최종 결과 로컬 스토리지 캐시 최신화
+                    saveToLocalStorage();
+
+                    // ⚡ 실시간 UI 동기화 리렌더링 수행!
+                    renderProfileDisplay();
+                    renderBooksList();
+
+                    // 💡 [레이스 컨디션 방지] AI가 생각 중이거나 응답을 기다리는 도중에는 화면 리렌더링으로 로딩 UI가 깨지지 않도록 채팅 화면 갱신을 임시로 유보합니다.
+                    if (!window.isAwaitingResponse) {
+                        renderSessionsSidebar();
+                        renderChatHistory();
+                    } else {
+                        console.log("⏳ [Chat] AI 멘토 응답 대기 상태이므로 실시간 리스너의 채팅 UI 갱신을 임시 유보합니다.");
+                    }
+
+                    renderExamHistory();
+                    renderGPAHistory();
+                    drawGradeChart();
+                    generateAIDiagnosticReport();
+
+                    console.info("✅ [Firestore] 실시간 화면 자동 업데이트 및 스마트 병합 완료!");
+                }, (error) => {
+                    console.error("❌ [Firestore] 실시간 리스너 오류 발생: ", error);
+                    const loadingScreen = document.getElementById('loadingScreen');
+                    if (loadingScreen) {
+                        loadingScreen.style.opacity = '0';
+                        setTimeout(() => { loadingScreen.style.display = 'none'; }, 500);
+                    }
+                });
+
+            } catch (error) {
+                console.error("❌ [Firestore] 실시간 리스너 등록 오류: ", error);
+                const loadingScreen = document.getElementById('loadingScreen');
+                if (loadingScreen) {
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => { loadingScreen.style.display = 'none'; }, 500);
+                }
+            }
+        });
+
+        // -------------------------------------------------------------
+        // 데스크 탭 라우팅 전환 로직
+        // -------------------------------------------------------------
+        window.switchDesk = function (deskId) {
+            document.querySelectorAll('.desk-btn').forEach((btn, idx) => {
+                btn.classList.remove('active');
+                if (btn.innerText.toLowerCase().includes(deskId === 'mentor' ? 'mentor' : deskId === 'grade' ? 'grade' : 'timer')) {
+                    btn.classList.add('active');
+                }
+            });
+
+            document.querySelectorAll('.workspace-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.getElementById('desk-' + deskId).classList.add('active');
+
+            if (deskId === 'grade') {
+                setTimeout(drawGradeChart, 100);
+            }
+        };
+
+        // -------------------------------------------------------------
+        // 모달 제어 유틸리티
+        // -------------------------------------------------------------
+        window.openModal = function (modalId) {
+            document.getElementById(modalId).classList.add('show');
+            if (modalId === 'profileModal') {
+                document.getElementById('profUniv').value = appData.studentProfile?.university || "";
+                document.getElementById('profDept').value = appData.studentProfile?.department || "";
+                document.getElementById('profKor').value = appData.studentProfile?.korSubject || "선택 안 됨";
+                document.getElementById('profMath').value = appData.studentProfile?.mathSubject || "선택 안 됨";
+            } else if (modalId === 'apiSettingsModal') {
+                const settings = appData.apiSettings || { mode: "backend", backendUrl: "https://onplan2snu27-backend.onrender.com", apiKey: "" };
+                document.getElementById('apiMode').value = settings.mode || "backend";
+                document.getElementById('apiBackendUrl').value = settings.backendUrl || "https://onplan2snu27-backend.onrender.com";
+                document.getElementById('apiUserKey').value = settings.apiKey || appData.apiKey || "";
+                window.toggleApiModalFields();
+            }
+        };
+
+        window.closeModal = function (modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        };
+
+        window.toggleApiModalFields = function () {
+            const mode = document.getElementById('apiMode').value;
+            const backendFields = document.getElementById('apiBackendFields');
+            const directFields = document.getElementById('apiDirectFields');
+            if (mode === 'direct') {
+                backendFields.style.display = 'none';
+                directFields.style.display = 'block';
+            } else {
+                backendFields.style.display = 'block';
+                directFields.style.display = 'none';
+            }
+        };
+
+        window.saveApiSettings = function () {
+            const mode = document.getElementById('apiMode').value;
+            const backendUrl = document.getElementById('apiBackendUrl').value.trim();
+            const apiKey = document.getElementById('apiUserKey').value.trim();
+
+            appData.apiSettings = { mode, backendUrl, apiKey };
+            if (apiKey) {
+                appData.apiKey = apiKey;
+            }
+
+            saveToLocalStorage();
+            closeModal('apiSettingsModal');
+
+            setDoc(doc(db, "users", USER_DOC_ID), {
+                apiSettings: appData.apiSettings,
+                apiKey: appData.apiKey
+            }, { merge: true })
+            .then(() => {
+                console.info("📤 [Firestore] API 설정 백업 완료!");
+                alert("API 설정이 성공적으로 저장 및 클라우드 동기화되었습니다! 🚀");
+            })
+            .catch(err => {
+                console.error("API Settings Sync Error: ", err);
+                alert("설정은 반영되었으나 서버 동기화에 실패했습니다. (오프라인 캐시 적용됨)");
+            });
+        };
+
+        // -------------------------------------------------------------
+        // 학생 프로필 관리 로직
+        // -------------------------------------------------------------
+        window.saveProfile = function () {
+            const university = document.getElementById('profUniv').value.trim();
+            const department = document.getElementById('profDept').value.trim();
+            const korSubject = document.getElementById('profKor').value;
+            const mathSubject = document.getElementById('profMath').value;
+
+            appData.studentProfile = { university, department, korSubject, mathSubject };
+            saveToLocalStorage(); // 즉각 로컬 캐시 저장
+            renderProfileDisplay();
+            generateAIDiagnosticReport();
+            closeModal('profileModal');
+
+            setDoc(doc(db, "users", USER_DOC_ID), { studentProfile: appData.studentProfile }, { merge: true })
+                .catch(err => console.error("Profile Sync Error: ", err));
+        };
+
+        function renderProfileDisplay() {
+            const p = appData.studentProfile || {};
+            document.getElementById('sumUniv').innerText = p.university || "설정 안 됨";
+            document.getElementById('sumDept').innerText = p.department || "설정 안 됨";
+            document.getElementById('sumKor').innerText = p.korSubject || "선택 안 됨";
+            document.getElementById('sumMath').innerText = p.mathSubject || "선택 안 됨";
+
+            if (p.university || p.department) {
+                document.getElementById('btnProfileText').innerText = `${p.university || ''} ${p.department || ''}`;
+            } else {
+                document.getElementById('btnProfileText').innerText = "과목 & 목표 설정";
+            }
+        }
+
+        // -------------------------------------------------------------
+        // My Library 리스트 미니 렌더링
+        // -------------------------------------------------------------
+        function renderBooksList() {
+            const container = document.getElementById('miniBooksList');
+            container.innerHTML = '';
+
+            if (!appData.books || appData.books.length === 0) {
+                container.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:0.8rem; padding: 2rem 0;">문제집 정보가 없습니다.</div>`;
+                return;
+            }
+
+            appData.books.forEach(book => {
+                const total = book.chapters ? book.chapters.length : 0;
+                const completed = book.chapters ? book.chapters.filter(c => c.done).length : 0;
+                const progressPercent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+                const item = document.createElement('div');
+                item.className = 'mini-book-item';
+                item.innerHTML = `
+                    <span class="mini-book-name" title="${book.title}">${book.title}</span>
+                    <span class="mini-book-prog">${progressPercent}%</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // -------------------------------------------------------------
+        // 멀티 세션 채팅 대화방 비즈니스 로직
+        // -------------------------------------------------------------
+        window.renderSessionsSidebar = function () {
+            const listEl = document.getElementById('sessionsList');
+            if (!listEl) return;
+            listEl.innerHTML = '';
+
+            if (!appData.chatSessions || appData.chatSessions.length === 0) {
+                appData.chatSessions = [{ id: "session_default", name: "기본 대화방", history: [] }];
+                appData.activeSessionId = "session_default";
+            }
+
+            appData.chatSessions.forEach(session => {
+                const item = document.createElement('div');
+                item.className = `session-item ${session.id === appData.activeSessionId ? 'active' : ''}`;
+                item.innerText = session.name || "이름 없는 대화방";
+
+                item.onclick = () => {
+                    window.selectChatSession(session.id);
+                };
+
+                listEl.appendChild(item);
+            });
+        };
+
+        window.createNewChatSession = async function () {
+            const newSession = { id: "session_" + Date.now(), name: "새 대화방", history: [] };
+            appData.chatSessions.push(newSession);
+            appData.activeSessionId = newSession.id;
+
+            // 새 대화방 생성 시 즉시 상단 헤더 타이틀도 업데이트
+            const titleEl = document.getElementById('currentSessionTitle');
+            if (titleEl) titleEl.innerText = newSession.name;
+
+            renderSessionsSidebar();
+            renderChatHistory();
+            saveToLocalStorage();
+
+            try {
+                setDoc(doc(db, "users", USER_DOC_ID), {
+                    chatSessions: appData.chatSessions,
+                    activeSessionId: appData.activeSessionId
+                }, { merge: true }).catch(e => console.error("대화방 생성 실패: ", e));
+            } catch (e) {
+                console.error("대화방 생성 실패: ", e);
+            }
+        };
+        // 하위 호환성 유지용 별칭 등록
+        window.createNewSession = window.createNewChatSession;
+
+        window.selectChatSession = function (sessionId) {
+            appData.activeSessionId = sessionId;
+
+            // 세션 선택 시 즉시 상단 헤더 타이틀도 업데이트
+            const session = appData.chatSessions.find(s => s.id === sessionId);
+            const titleEl = document.getElementById('currentSessionTitle');
+            if (titleEl && session) titleEl.innerText = session.name;
+
+            renderSessionsSidebar();
+            renderChatHistory();
+            saveToLocalStorage();
+        };
+
+        window.renameCurrentSession = async function (sessionId) {
+            const id = sessionId || appData.activeSessionId; // 매개변수 없을 시 현재 활성 방 타겟팅
+            const session = appData.chatSessions.find(s => s.id === id);
+            if (!session) return;
+
+            const newName = prompt("새로운 대화방 이름을 입력하세요:", session.name);
+            if (newName && newName.trim() !== "") {
+                session.name = newName.trim();
+
+                // 이름 변경 시 실시간으로 헤더 타이틀 갱신
+                if (id === appData.activeSessionId) {
+                    const titleEl = document.getElementById('currentSessionTitle');
+                    if (titleEl) titleEl.innerText = session.name;
+                }
+
+                renderSessionsSidebar();
+                saveToLocalStorage();
+
+                try {
+                    setDoc(doc(db, "users", USER_DOC_ID), {
+                        chatSessions: appData.chatSessions
+                    }, { merge: true }).catch(e => console.error("이름 변경 실패: ", e));
+                } catch (e) {
+                    console.error("이름 변경 실패: ", e);
+                }
+            }
+        };
+
+        window.deleteCurrentSession = async function (sessionId) {
+            const id = sessionId || appData.activeSessionId; // 매개변수 없을 시 현재 활성 방 타겟팅
+            if (appData.chatSessions.length <= 1) {
+                alert("최소 1개의 대화방은 유지해야 합니다.");
+                return;
+            }
+            if (!confirm("정말 이 대화방을 삭제하시겠습니까? (복구 불가)")) return;
+
+            const currentIdx = appData.chatSessions.findIndex(s => s.id === id);
+            if (currentIdx > -1) {
+                appData.chatSessions.splice(currentIdx, 1);
+                appData.activeSessionId = appData.chatSessions[0].id;
+
+                // 삭제 후 즉시 활성화되는 대화방 명칭으로 상단 헤더 타이틀 갱신
+                const activeSession = appData.chatSessions.find(s => s.id === appData.activeSessionId);
+                const titleEl = document.getElementById('currentSessionTitle');
+                if (titleEl && activeSession) titleEl.innerText = activeSession.name;
+
+                renderSessionsSidebar();
+                renderChatHistory();
+                saveToLocalStorage();
+
+                try {
+                    setDoc(doc(db, "users", USER_DOC_ID), {
+                        chatSessions: appData.chatSessions,
+                        activeSessionId: appData.activeSessionId
+                    }, { merge: true }).catch(e => console.error("대화방 삭제 실패: ", e));
+                } catch (e) {
+                    console.error("대화방 삭제 실패: ", e);
+                }
+            }
+        };
+
+        // -------------------------------------------------------------
+        // AI 멘토 챗봇 코어 로직 (Gemini / Render Backend) - 안정성 개선 완료
+        // -------------------------------------------------------------
+        window.sendChatMessage = async function () {
+            const inputEl = document.getElementById('chatInput');
+            const chatArea = document.getElementById('chatArea');
+            const text = inputEl.value.trim();
+            if (!text) return;
+
+            console.log("💬 [Chat] 질문 전송 시도:", text);
+            console.log("💬 [Chat] 현재 활성화된 API 설정:", JSON.stringify(appData.apiSettings));
+
+            // [레이스 컨디션 UI 소실 방지] AI가 생각하고 있을 때 실시간 리스너에 의한 화면 리렌더링을 차단합니다.
+            window.isAwaitingResponse = true;
+
+            // 자가 진단 및 대화방 로딩 누락 방지 self-healing 복구 로직
+            let currentSession = appData.chatSessions.find(s => s.id === appData.activeSessionId);
+            if (!currentSession) {
+                if (appData.chatSessions.length > 0) {
+                    appData.activeSessionId = appData.chatSessions[0].id;
+                    currentSession = appData.chatSessions[0];
+                } else {
+                    const newSession = { id: "session_default", name: "기본 대화방", history: [] };
+                    appData.chatSessions = [newSession];
+                    appData.activeSessionId = "session_default";
+                    currentSession = newSession;
+                }
+                renderSessionsSidebar();
+            }
+
+            // 채팅 내역 밀어넣기
+            if (!currentSession.history) currentSession.history = [];
+            currentSession.history.push({ role: 'user', text: text });
+            inputEl.value = '';
+            renderChatHistory();
+            saveToLocalStorage(); // 오프라인 사용자 반응성 극대화
+
+            // 비동기 저장 스케줄러 (UI 블러킹 제거)
+            setTimeout(() => {
+                setDoc(doc(db, "users", USER_DOC_ID), {
+                    chatSessions: appData.chatSessions
+                }, { merge: true }).catch(e => console.error("채팅 내역 저장 에러: ", e));
+            }, 0);
+
+            const loadingId = "loading-" + Date.now();
+            chatArea.innerHTML += `<div id="${loadingId}" class="chat-bubble bot" style="opacity: 0.65;">수능 AI 멘토가 분석 중... ✨</div>`;
+            chatArea.scrollTop = chatArea.scrollHeight;
+
+            const profileStr = `\n\n[수험생 프로필: 목표 대학 - ${appData.studentProfile?.university || '미설정'}, 학과 - ${appData.studentProfile?.department || '미설정'}, 국어과목 - ${appData.studentProfile?.korSubject || '미설정'}, 수학과목 - ${appData.studentProfile?.mathSubject || '미설정'}]`;
+
+            const historyContents = currentSession.history.map(msg => ({
+                role: msg.role === 'user' ? 'user' : 'model',
+                parts: [{ text: msg.text + (msg.role === 'user' ? profileStr : '') }]
+            }));
+
+            // AbortController 정의 (타임아웃 제어용)
+            const controller = new AbortController();
+            let timeoutId = null;
+
+            try {
+                let botReply = "";
+                const settings = appData.apiSettings || { mode: "backend", backendUrl: "https://onplan2snu27-backend.onrender.com", apiKey: "" };
+                const effectiveApiKey = settings.apiKey || appData.apiKey;
+
+                console.log("🔎 [Debug] 통신 모드 판별 시작");
+                console.log("🔎 [Debug] settings.mode =", settings.mode);
+                console.log("🔎 [Debug] settings.apiKey =", settings.apiKey ? "(존재, " + settings.apiKey.substring(0, 8) + "...)" : "(없음)");
+                console.log("🔎 [Debug] appData.apiKey =", appData.apiKey ? "(존재, " + appData.apiKey.substring(0, 8) + "...)" : "(없음)");
+                console.log("🔎 [Debug] effectiveApiKey =", effectiveApiKey ? "(존재, " + effectiveApiKey.substring(0, 8) + "...)" : "(없음/falsy)");
+                console.log("🔎 [Debug] 진입 분기 조건: mode==='direct' →", settings.mode === 'direct', ", effectiveApiKey truthy →", !!effectiveApiKey);
+
+                if (settings.mode === 'direct' || effectiveApiKey) {
+                    if (!effectiveApiKey) {
+                        throw new Error("API 설정 관리자(⚙️)를 열어 나만의 Google AI Studio API Key를 먼저 입력해 주세요!");
+                    }
+
+                    console.info("⚡ [Chat] 구글 다이렉트 초고속 통신 모드 가동 (15초 타임아웃 적용)");
+                    timeoutId = setTimeout(() => {
+                        console.warn("⏱️ [Chat] 구글 다이렉트 API 통신 시간 초과 (15초)");
+                        controller.abort();
+                    }, 15000);
+
+                    const googleApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${effectiveApiKey}`;
+                    console.log("🔎 [Debug] 구글 API URL:", googleApiUrl.replace(effectiveApiKey, 'KEY_HIDDEN'));
+                    console.log("🔎 [Debug] AI 모델:", AI_MODEL);
+                    console.log("🔎 [Debug] fetch 전송 시작...");
+
+                    const response = await fetch(googleApiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: historyContents,
+                            systemInstruction: {
+                                parts: [{ text: "너는 서울대학교 컴퓨터공학부를 목표로 하는 고등학생 '송민찬'을 돕는 최고의 AI 멘토야. 친절하고, 분석적이며, 공부 계획과 컴퓨터 공학 지식에 대해 핵심만 짚어서 조언해줘. 친근하게 반말로 존중하며 서울대 선배 형/누나처럼 친근하게 조언해줘." }]
+                            }
+                        }),
+                        signal: controller.signal
+                    });
+
+                    console.log("🔎 [Debug] fetch 응답 수신! status:", response.status, "ok:", response.ok);
+
+                    if (!response.ok) {
+                        let errMsg = `HTTP ${response.status} ${response.statusText}`;
+                        try {
+                            const errBody = await response.json();
+                            errMsg = errBody.error?.message || errMsg;
+                        } catch (jsonErr) {
+                            console.warn("🔎 [Debug] 에러 응답 JSON 파싱 실패:", jsonErr);
+                            try { errMsg = await response.text(); } catch(e) {}
+                        }
+                        throw new Error(`구글 다이렉트 API 오류: ${errMsg}`);
+                    }
+
+                    console.log("🔎 [Debug] 응답 본문 JSON 파싱 시작...");
+                    const resData = await response.json();
+                    console.log("🔎 [Debug] 응답 본문 파싱 완료. candidates 수:", resData.candidates?.length || 0);
+
+                    if (!resData.candidates || resData.candidates.length === 0) {
+                        console.warn("🔎 [Debug] 응답에 candidates가 없음. 전체 응답:", JSON.stringify(resData).substring(0, 500));
+                        throw new Error("구글 API로부터 응답을 받지 못했습니다. (보안 검열 또는 빈 응답)");
+                    }
+                    botReply = resData.candidates[0].content.parts[0].text;
+                    console.log("✅ [Debug] 봇 답변 수신 성공! 길이:", botReply.length, "자");
+
+                } else {
+                    console.info("🌐 [Chat] 백엔드 서버 모드로 통신 시도 (25초 타임아웃 적용)");
+                    timeoutId = setTimeout(() => {
+                        console.warn("⏱️ [Chat] 백엔드 서버 통신 시간 초과 (25초)");
+                        controller.abort();
+                    }, 25000);
+
+                    const serverUrl = (settings.backendUrl || 'https://onplan2snu27-backend.onrender.com').replace(/\/$/, '') + '/api/chat';
+                    console.log("🔎 [Debug] 백엔드 URL:", serverUrl);
+                    console.log("🔎 [Debug] fetch 전송 시작...");
+
+                    const response = await fetch(serverUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            historyContents: historyContents,
+                            model: AI_MODEL
+                        }),
+                        signal: controller.signal
+                    });
+
+                    console.log("🔎 [Debug] 백엔드 응답 수신! status:", response.status, "ok:", response.ok);
+
+                    if (!response.ok) {
+                        let errDetail = `HTTP ${response.status}`;
+                        try { errDetail = await response.text(); } catch(e) {}
+                        throw new Error(`백엔드 서버 오류 (${errDetail}). ⚙️ 설정에서 직접 API 모드로 전환하세요.`);
+                    }
+                    const resData = await response.json();
+                    if (resData.error) throw new Error(resData.error);
+                    botReply = resData.reply;
+                    console.log("✅ [Debug] 백엔드 봇 답변 수신 성공! 길이:", botReply.length, "자");
+                }
+
+                if (timeoutId) clearTimeout(timeoutId);
+
+                const loadingBubble = document.getElementById(loadingId);
+                if (loadingBubble) loadingBubble.remove();
+
+                // 💡 [레이스 컨디션 핵심 수정]
+                // fetch 대기 중에 Firestore onSnapshot이 appData.chatSessions를 새 배열로 교체할 수 있음.
+                // 이 경우 기존 currentSession 참조는 stale(낡은 객체)이 되어, push해도 실제 데이터에 반영되지 않음.
+                // 따라서 봇 답변을 push하기 직전에 반드시 최신 appData.chatSessions에서 세션을 다시 조회!
+                currentSession = appData.chatSessions.find(s => s.id === appData.activeSessionId);
+                if (!currentSession) {
+                    // 만약 세션 자체가 삭제된 극단적 케이스 대비
+                    currentSession = appData.chatSessions[0];
+                }
+                if (!currentSession.history) currentSession.history = [];
+
+                currentSession.history.push({ role: 'bot', text: botReply });
+                console.log("✅ [Debug] 봇 답변을 최신 세션 객체에 push 완료. 현재 history 길이:", currentSession.history.length);
+                saveToLocalStorage();
+
+                setTimeout(() => {
+                    setDoc(doc(db, "users", USER_DOC_ID), {
+                        chatSessions: appData.chatSessions
+                    }, { merge: true }).catch(e => console.error("채팅 내역 클라우드 백업 에러: ", e));
+                }, 0);
+
+            } catch (error) {
+                if (timeoutId) clearTimeout(timeoutId);
+                console.error("❌ [Chat] AI Response Error:", error.name, error.message, error);
+                
+                let errorMsg = error.message;
+                if (error.name === 'AbortError') {
+                    errorMsg = "서버 통신 시간이 초과되었습니다 (타임아웃). 서버가 잠들어 있거나 네트워크 문제입니다.";
+                }
+
+                const loadingBubble = document.getElementById(loadingId);
+                if (loadingBubble) {
+                    loadingBubble.style.opacity = '1';
+                    loadingBubble.innerHTML = `❌ AI 멘토 통신 실패<br><span style="font-size:0.8rem; color:#FCA5A5;">${errorMsg}</span><br><br><span style="font-size:0.8rem; color:var(--text-sub);">💡 상단 ⚙️ 설정에서 구글 API Key 직접 모드로 전환해 보세요.</span><br><button class="quick-chip" style="background:var(--primary); color:#FFF; border:none; padding:6px 14px; margin-top:8px; cursor:pointer;" onclick="openModal('apiSettingsModal')">⚙️ API 설정 열기</button>`;
+                }
+            } finally {
+                window.isAwaitingResponse = false;
+                renderSessionsSidebar();
+                renderChatHistory();
+            }
+        };
+
+
+        window.renderChatHistory = function () {
+            const chatArea = document.getElementById('chatArea');
+            let currentSession = appData.chatSessions.find(s => s.id === appData.activeSessionId);
+
+            if (!currentSession) {
+                if (appData.chatSessions.length > 0) {
+                    appData.activeSessionId = appData.chatSessions[0].id;
+                    currentSession = appData.chatSessions[0];
+                } else {
+                    const newSession = { id: "session_default", name: "기본 대화방", history: [] };
+                    appData.chatSessions = [newSession];
+                    appData.activeSessionId = "session_default";
+                    currentSession = newSession;
+                }
+            }
+
+            // ⚡ [동기화 핵심] 상단 대화방 헤더 타이틀의 글자를 데이터베이스 세션 이름으로 실시간 동기화 갱신!
+            const titleEl = document.getElementById('currentSessionTitle');
+            if (titleEl) {
+                titleEl.innerText = currentSession.name || "이름 없는 대화방";
+            }
+
+            if (!currentSession.history || currentSession.history.length === 0) {
+                chatArea.innerHTML = `<div class="chat-bubble bot">안녕하세요, 민찬님! 2027학년도 수능 성공을 돕는 **ONStudy AI 멘토**입니다. 우측에서 과목과 목표를 설정하면 맞춤형 조언이 정밀화됩니다. 🚀</div>`;
+                return;
+            }
+
+            let html = '';
+            currentSession.history.forEach(msg => {
+                const roleClass = msg.role === 'user' ? 'user' : 'bot';
+                const parsedText = parseMarkdown(msg.text);
+                html += `<div class="chat-bubble ${roleClass}">${parsedText}</div>`;
+            });
+            chatArea.innerHTML = html;
+            chatArea.scrollTop = chatArea.scrollHeight;
+        };
+
+        window.clearChatHistory = function () {
+            if (!confirm("정말 현재 대화방의 모든 채팅 이력을 지우시겠습니까?")) return;
+            const currentSession = appData.chatSessions.find(s => s.id === appData.activeSessionId);
+            if (!currentSession) return;
+            currentSession.history = [];
+            renderChatHistory();
+            saveToLocalStorage(); // 로컬 리셋 동기화
+            setDoc(doc(db, "users", USER_DOC_ID), { chatSessions: appData.chatSessions }, { merge: true })
+                .catch(e => console.error("채팅 내역 삭제 동기화 실패: ", e));
+        };
+
+        window.applyQuickPrompt = function (promptText) {
+            document.getElementById('chatInput').value = promptText;
+            document.getElementById('chatInput').focus();
+        };
+
+        // 아주 간단하고 견고한 Markdown 파서
+        function parseMarkdown(text) {
+            if (!text) return "";
+            let html = text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+
+            // 볼드체 (**text**)
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            // 코드 블록 (`code`)
+            html = html.replace(/`(.*?)`/g, '<code>$1</code>');
+
+            // 인용 블록 (> text)
+            html = html.replace(/^\s*&gt;\s+(.*)$/gm, '<blockquote>$1</blockquote>');
+
+            // 단락 분리
+            html = html.split('\n\n').map(p => {
+                if (p.trim().startsWith('<blockquote')) return p;
+                return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+            }).join('');
+
+            return html;
+        }
+
+        // -------------------------------------------------------------
+        // 테마 모드 전환 로직 (Light/Dark Mode)
+        // -------------------------------------------------------------
+        window.toggleThemeMode = function () {
+            const btn = document.getElementById('themeToggleBtn');
+            const icon = btn.querySelector('span');
+            const txt = document.getElementById('themeToggleText');
+
+            if (document.body.classList.contains('light-theme')) {
+                document.body.classList.remove('light-theme');
+                icon.innerText = "🌙";
+                txt.innerText = "Dark Mode";
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.classList.add('light-theme');
+                icon.innerText = "☀️";
+                txt.innerText = "Light Mode";
+                localStorage.setItem('theme', 'light');
+            }
+            // 차트 및 배경 다시 그리기
+            drawGradeChart();
+        };
+
+        // 로컬스토리지 테마 초기 복원 기믹
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-theme');
+            setTimeout(() => {
+                const btn = document.getElementById('themeToggleBtn');
+                if (btn) {
+                    btn.querySelector('span').innerText = "☀️";
+                    document.getElementById('themeToggleText').innerText = "Light Mode";
+                }
+            }, 150);
+        }
+
+        // -------------------------------------------------------------
+        // 2. 모의고사 성적 기록 엔진 & 시각화 차트
+        // -------------------------------------------------------------
+        window.switchGradeSubTab = function (tabId) {
+            currentGradeSubTab = tabId;
+            const csatTab = document.getElementById('btnGradeCSATTab');
+            const gpaTab = document.getElementById('btnGradeGPATab');
+            const csatForm = document.getElementById('csatFormCard');
+            const gpaForm = document.getElementById('gpaFormCard');
+            const csatList = document.getElementById('examHistoryList');
+            const gpaList = document.getElementById('gpaHistoryList');
+            const historyHeader = document.getElementById('historyCardHeader');
+            const chartHeader = document.getElementById('chartCardHeader');
+            const reportTitle = document.getElementById('reportTitle');
+
+            if (tabId === 'csat') {
+                csatTab.classList.add('active');
+                gpaTab.classList.remove('active');
+                csatForm.style.display = 'block';
+                gpaForm.style.display = 'none';
+                csatList.style.display = 'block';
+                gpaList.style.display = 'none';
+                historyHeader.innerText = "모의고사 기입 이력";
+                chartHeader.innerText = "2027 수능 등급 추이 시각화 (Mock Exam Chart)";
+                reportTitle.innerHTML = `<span>📋</span> AI 수능 취약성 정밀 분석 보고서`;
+            } else {
+                csatTab.classList.remove('active');
+                gpaTab.classList.add('active');
+                csatForm.style.display = 'none';
+                gpaForm.style.display = 'block';
+                csatList.style.display = 'none';
+                gpaList.style.display = 'block';
+                historyHeader.innerText = "내신 학기별 기입 이력";
+                chartHeader.innerText = "고교 학기별 내신 성적 추이 시각화 (Academic GPA Chart)";
+                reportTitle.innerHTML = `<span>📋</span> AI 수시/학생부 평가 진단 리포트`;
+            }
+
+            drawGradeChart();
+            generateAIDiagnosticReport();
+        };
+
+        window.saveGrade = function (event) {
+            event.preventDefault();
+            const exam = document.getElementById('examName').value;
+            const year = document.getElementById('examYear').value.trim();
+            const kor = document.getElementById('gradeKor').value.trim();
+            const math = document.getElementById('gradeMath').value.trim();
+            const eng = parseInt(document.getElementById('gradeEng').value);
+            const hist = parseInt(document.getElementById('gradeHist').value);
+            const sub1 = document.getElementById('gradeSub1').value.trim();
+            const sub2 = document.getElementById('gradeSub2').value.trim();
+
+            const record = { exam, year, kor, math, eng, hist, sub1, sub2, timestamp: Date.now() };
+
+            if (!appData.mockExams) appData.mockExams = [];
+            // 동일 시험 중복 제거
+            const existingIdx = appData.mockExams.findIndex(x => x.exam === exam && x.year === year);
+            if (existingIdx > -1) {
+                appData.mockExams[existingIdx] = record;
+            } else {
+                appData.mockExams.push(record);
+            }
+
+            saveToLocalStorage(); // 오프라인용 즉시 동기화
+            renderExamHistory();
+            drawGradeChart();
+            generateAIDiagnosticReport();
+            document.getElementById('gradeForm').reset();
+
+            setDoc(doc(db, "users", USER_DOC_ID), { mockExams: appData.mockExams }, { merge: true })
+                .catch(err => console.error("Grade Save Error: ", err));
+        };
+
+        window.deleteGrade = function (idx) {
+            if (!confirm("해당 시험 성적을 삭제하시겠습니까?")) return;
+            appData.mockExams.splice(idx, 1);
+            saveToLocalStorage(); // 오프라인용 즉시 동기화
+            renderExamHistory();
+            drawGradeChart();
+            generateAIDiagnosticReport();
+
+            setDoc(doc(db, "users", USER_DOC_ID), { mockExams: appData.mockExams }, { merge: true })
+                .catch(err => console.error("Grade Delete Error: ", err));
+        };
+
+        // 내신 성적 저장 및 분석 엔진
+        window.saveGPA = function (event) {
+            event.preventDefault();
+            const semester = document.getElementById('gpaSemester').value;
+            const avg = parseFloat(document.getElementById('gpaAverage').value);
+            const kor = parseInt(document.getElementById('gpaKor').value) || null;
+            const math = parseInt(document.getElementById('gpaMath').value) || null;
+            const eng = parseInt(document.getElementById('gpaEng').value) || null;
+            const subj = parseInt(document.getElementById('gpaSubj').value) || null;
+
+            const record = { semester, avg, kor, math, eng, subj, timestamp: Date.now() };
+
+            if (!appData.schoolGrades) appData.schoolGrades = [];
+            // 동일 학기 중복 제거
+            const existingIdx = appData.schoolGrades.findIndex(x => x.semester === semester);
+            if (existingIdx > -1) {
+                appData.schoolGrades[existingIdx] = record;
+            } else {
+                appData.schoolGrades.push(record);
+            }
+
+            saveToLocalStorage(); // 오프라인용 즉시 동기화
+            renderGPAHistory();
+            drawGradeChart();
+            generateAIDiagnosticReport();
+            document.getElementById('gpaForm').reset();
+
+            setDoc(doc(db, "users", USER_DOC_ID), { schoolGrades: appData.schoolGrades }, { merge: true })
+                .catch(err => console.error("GPA Save Error: ", err));
+        };
+
+        window.deleteGPA = function (idx) {
+            if (!confirm("해당 내신 성적을 삭제하시겠습니까?")) return;
+            appData.schoolGrades.splice(idx, 1);
+            saveToLocalStorage(); // 오프라인용 즉시 동기화
+            renderGPAHistory();
+            drawGradeChart();
+            generateAIDiagnosticReport();
+
+            setDoc(doc(db, "users", USER_DOC_ID), { schoolGrades: appData.schoolGrades }, { merge: true })
+                .catch(err => console.error("GPA Delete Error: ", err));
+        };
+
+        function renderExamHistory() {
+            const container = document.getElementById('examHistoryList');
+            container.innerHTML = '';
+
+            if (!appData.mockExams || appData.mockExams.length === 0) {
+                container.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:0.8rem; padding: 2rem 0;">등록된 성적이 없습니다.</div>`;
+                return;
+            }
+
+            // 최신 시험 순으로 정렬
+            const sorted = [...appData.mockExams].sort((a, b) => b.timestamp - a.timestamp);
+
+            sorted.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = 'exam-history-item';
+                div.innerHTML = `
+                    <div style="flex:1;">
+                        <div class="exam-history-title">${item.year}년 ${item.exam}</div>
+                        <div class="exam-history-subtext">
+                            국어: ${item.kor} | 수학: ${item.math} | 영어: ${item.eng}등급 | ${item.sub1} | ${item.sub2}
+                        </div>
+                    </div>
+                    <div class="exam-history-actions">
+                        <button class="exam-action-btn delete" onclick="deleteGrade(${appData.mockExams.indexOf(item)})">🗑️</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderGPAHistory() {
+            const container = document.getElementById('gpaHistoryList');
+            container.innerHTML = '';
+
+            if (!appData.schoolGrades || appData.schoolGrades.length === 0) {
+                container.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:0.8rem; padding: 2rem 0;">등록된 내신 성적이 없습니다.</div>`;
+                return;
+            }
+
+            const semesterOrder = {
+                "1학년 1학기": 1, "1학년 2학기": 2,
+                "2학년 1학기": 3, "2학년 2학기": 4,
+                "3학년 1학기": 5, "3학년 2학기": 6
+            };
+            // 학기 순으로 정렬하여 렌더링
+            const sorted = [...appData.schoolGrades].sort((a, b) => semesterOrder[b.semester] - semesterOrder[a.semester]);
+
+            sorted.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = 'exam-history-item';
+                div.innerHTML = `
+                    <div style="flex:1;">
+                        <div class="exam-history-title">${item.semester} <span style="color:#10B981; margin-left:6px;">${item.avg.toFixed(2)}등급</span></div>
+                        <div class="exam-history-subtext">
+                            국어: ${item.kor || '-'} | 수학: ${item.math || '-'} | 영어: ${item.eng || '-'} | 사탐/과탐: ${item.subj || '-'}
+                        </div>
+                    </div>
+                    <div class="exam-history-actions">
+                        <button class="exam-action-btn delete" onclick="deleteGPA(${appData.schoolGrades.indexOf(item)})">🗑️</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // SVG 기반 고성능/미려 수능 & 내신 등급 차트 시각화
+        function drawGradeChart() {
+            const chartWrapper = document.getElementById('chartWrapper');
+            chartWrapper.innerHTML = '';
+
+            const isLightTheme = document.body.classList.contains('light-theme');
+            const lineGridColor = isLightTheme ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.04)";
+            const textLabelColor = isLightTheme ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.4)";
+            const axisLabelColor = isLightTheme ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.3)";
+
+            if (currentGradeSubTab === 'csat') {
+                if (!appData.mockExams || appData.mockExams.length === 0) {
+                    chartWrapper.innerHTML = `<div style="display:flex; justify-content:center; align-items:center; height:100%; color:var(--text-muted); font-size:0.85rem;">모의고사 성적을 등록하면 이곳에 등급 추이가 선형 시각화됩니다.</div>`;
+                    return;
+                }
+
+                // 가입일/시간 순 정렬
+                const sorted = [...appData.mockExams].sort((a, b) => a.timestamp - b.timestamp);
+                const examsCount = sorted.length;
+
+                const width = chartWrapper.clientWidth || 500;
+                const height = 240;
+                const padding = 35;
+
+                let svgHtml = `<svg width="${width}" height="${height}" style="background:transparent; overflow:visible;">`;
+
+                // 그리드 및 Y축 가이드선 그리기 (1등급 ~ 9등급)
+                const getX = (idx) => padding + (idx * (width - 2 * padding) / (examsCount > 1 ? examsCount - 1 : 1));
+                const getY = (grade) => padding + ((grade - 1) * (height - 2 * padding) / 8);
+
+                // 가이드라인 & Y 라벨
+                for (let g = 1; g <= 9; g++) {
+                    const y = getY(g);
+                    svgHtml += `<line x1="${padding}" y1="${y}" x2="${width - padding}" y2="${y}" stroke="${lineGridColor}" stroke-width="1" />`;
+                    svgHtml += `<text x="${padding - 12}" y="${y + 4}" fill="${axisLabelColor}" font-size="9" text-anchor="middle" font-weight="bold">${g}</text>`;
+                }
+
+                // 국어 및 수학 라인 좌표 모음
+                let korPoints = [];
+                let mathPoints = [];
+
+                sorted.forEach((item, idx) => {
+                    const x = getX(idx);
+                    const kGrade = parseInt(item.kor.split('/')[0]) || 5;
+                    const mGrade = parseInt(item.math.split('/')[0]) || 5;
+
+                    korPoints.push({ x, y: getY(kGrade), grade: kGrade });
+                    mathPoints.push({ x, y: getY(mGrade), grade: mGrade });
+
+                    // X축 시험명 텍스트
+                    svgHtml += `<text x="${x}" y="${height - 8}" fill="${textLabelColor}" font-size="10" text-anchor="middle" font-weight="700">${item.exam}</text>`;
+                });
+
+                // 국어 라인 생성 (Purple)
+                if (korPoints.length > 0) {
+                    let pathD = `M ${korPoints[0].x} ${korPoints[0].y}`;
+                    for (let i = 1; i < korPoints.length; i++) {
+                        pathD += ` L ${korPoints[i].x} ${korPoints[i].y}`;
+                    }
+                    svgHtml += `<path d="${pathD}" fill="none" stroke="var(--primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />`;
+
+                    // 포인트 닷
+                    korPoints.forEach(pt => {
+                        svgHtml += `<circle cx="${pt.x}" cy="${pt.y}" r="5" fill="#FFFFFF" stroke="var(--primary)" stroke-width="3" />`;
+                    });
+                }
+
+                // 수학 라인 생성 (Blue)
+                if (mathPoints.length > 0) {
+                    let pathD = `M ${mathPoints[0].x} ${mathPoints[0].y}`;
+                    for (let i = 1; i < mathPoints.length; i++) {
+                        pathD += ` L ${mathPoints[i].x} ${mathPoints[i].y}`;
+                    }
+                    svgHtml += `<path d="${pathD}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />`;
+
+                    // 포인트 닷
+                    mathPoints.forEach(pt => {
+                        svgHtml += `<circle cx="${pt.x}" cy="${pt.y}" r="5" fill="#FFFFFF" stroke="var(--accent)" stroke-width="3" />`;
+                    });
+                }
+
+                // 범례 추가
+                svgHtml += `
+                    <g transform="translate(${width - 120}, 10)">
+                        <rect x="0" y="0" width="8" height="8" fill="var(--primary)" rx="2" />
+                        <text x="14" y="8" fill="${textLabelColor}" font-size="9" font-weight="bold">국어 등급</text>
+                        <rect x="60" y="0" width="8" height="8" fill="var(--accent)" rx="2" />
+                        <text x="74" y="8" fill="${textLabelColor}" font-size="9" font-weight="bold">수학 등급</text>
+                    </g>
+                `;
+
+                svgHtml += `</svg>`;
+                chartWrapper.innerHTML = svgHtml;
+            } else {
+                // GPA (내신) 모드 차트 드로잉
+                if (!appData.schoolGrades || appData.schoolGrades.length === 0) {
+                    chartWrapper.innerHTML = `<div style="display:flex; justify-content:center; align-items:center; height:100%; color:var(--text-muted); font-size:0.85rem;">내신 성적을 등록하면 이곳에 등급 추이가 선형 시각화됩니다.</div>`;
+                    return;
+                }
+
+                const semesterOrder = {
+                    "1학년 1학기": 1, "1학년 2학기": 2,
+                    "2학년 1학기": 3, "2학년 2학기": 4,
+                    "3학년 1학기": 5, "3학년 2학기": 6
+                };
+
+                // 학기 순서대로 오름차순 정렬
+                const sorted = [...appData.schoolGrades].sort((a, b) => semesterOrder[a.semester] - semesterOrder[b.semester]);
+                const gpaCount = sorted.length;
+
+                const width = chartWrapper.clientWidth || 500;
+                const height = 240;
+                const padding = 35;
+
+                let svgHtml = `<svg width="${width}" height="${height}" style="background:transparent; overflow:visible;">`;
+
+                const getX = (idx) => padding + (idx * (width - 2 * padding) / (gpaCount > 1 ? gpaCount - 1 : 1));
+                const getY = (grade) => padding + ((grade - 1) * (height - 2 * padding) / 8);
+
+                // Y 가이드라인
+                for (let g = 1; g <= 9; g++) {
+                    const y = getY(g);
+                    svgHtml += `<line x1="${padding}" y1="${y}" x2="${width - padding}" y2="${y}" stroke="${lineGridColor}" stroke-width="1" />`;
+                    svgHtml += `<text x="${padding - 12}" y="${y + 4}" fill="${axisLabelColor}" font-size="9" text-anchor="middle" font-weight="bold">${g}</text>`;
+                }
+
+                let gpaPoints = [];
+                sorted.forEach((item, idx) => {
+                    const x = getX(idx);
+                    const y = getY(item.avg);
+                    gpaPoints.push({ x, y, avg: item.avg });
+
+                    const shortLabel = item.semester.replace("학년 ", "-").replace("학기", "");
+                    svgHtml += `<text x="${x}" y="${height - 8}" fill="${textLabelColor}" font-size="10" text-anchor="middle" font-weight="700">${shortLabel}</text>`;
+                });
+
+                // 내신 그래프 드로잉 (Green)
+                if (gpaPoints.length > 0) {
+                    let pathD = `M ${gpaPoints[0].x} ${gpaPoints[0].y}`;
+                    for (let i = 1; i < gpaPoints.length; i++) {
+                        pathD += ` L ${gpaPoints[i].x} ${gpaPoints[i].y}`;
+                    }
+                    svgHtml += `<path d="${pathD}" fill="none" stroke="#10B981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />`;
+
+                    // 포인트 닷 & 점수 텍스트
+                    gpaPoints.forEach(pt => {
+                        svgHtml += `<circle cx="${pt.x}" cy="${pt.y}" r="5" fill="#FFFFFF" stroke="#10B981" stroke-width="3" />`;
+                        svgHtml += `<text x="${pt.x}" y="${pt.y - 10}" fill="#10B981" font-size="9.5" font-weight="900" text-anchor="middle">${pt.avg.toFixed(2)}</text>`;
+                    });
+                }
+
+                // 범례 추가
+                svgHtml += `
+                    <g transform="translate(${width - 120}, 10)">
+                        <rect x="0" y="0" width="8" height="8" fill="#10B981" rx="2" />
+                        <text x="14" y="8" fill="${textLabelColor}" font-size="9" font-weight="bold">내신 평균등급</text>
+                    </g>
+                `;
+
+                svgHtml += `</svg>`;
+                chartWrapper.innerHTML = svgHtml;
+            }
+        }
+
+        // AI 성적 리포트 분석 자동 조립 모듈 (CSAT & GPA 통합 진단)
+        function generateAIDiagnosticReport() {
+            const reportEl = document.getElementById('aiDiagnosticReport');
+
+            if (currentGradeSubTab === 'csat') {
+                if (!appData.mockExams || appData.mockExams.length === 0) {
+                    reportEl.innerHTML = `모의고사 성적을 1개 이상 등록하면 AI가 전반적인 학습 등급 추이를 계산하여 취약점 보강 포인트를 생성합니다.`;
+                    return;
+                }
+
+                const latest = [...appData.mockExams].sort((a, b) => b.timestamp - a.timestamp)[0];
+                const kGrade = parseInt(latest.kor.split('/')[0]) || 5;
+                const mGrade = parseInt(latest.math.split('/')[0]) || 5;
+                const eGrade = latest.eng;
+
+                let report = `🎯 **${latest.year}년 ${latest.exam} 성적 기준 정밀 AI 진단 결과**<br><br>`;
+                report += `현재 **국어 ${kGrade}등급, 수학 ${mGrade}등급, 영어 ${eGrade}등급**을 기록하고 있습니다.<br>`;
+
+                // 취약 부분 식별 가이드라인
+                if (kGrade > mGrade) {
+                    report += `💡 **국어 과목 대비 보강 추천**: 수학(${mGrade}등급)에 비해 국어 등급이 낮습니다. 매일 아침 수능 국어 시험시간과 동일한 생체리듬 구축을 위해 독서 비문학 3지문 분석 과제를 **ONPlan 플래너**에 예약 등록하십시오.<br>`;
+                } else if (mGrade > kGrade) {
+                    report += `💡 **수학 과목 대비 보강 추천**: 국어(${kGrade}등급)에 비해 수학 등급이 취약합니다. 미적분/확통 선택과목의 4점 핵심 기출 킬러 문항에 대한 반복적 논리 설계가 요망됩니다. 주 3회 오답 정리를 권장합니다.<br>`;
+                } else {
+                    report += `💡 **균형 잡힌 학습 제안**: 주요 두 과목의 밸런스가 좋습니다. 단, 영어 ${eGrade}등급이 수시 최저 등급의 안정적인 충족을 방해하지 않도록 빈칸추론 및 간접쓰기 문제 유형의 주기적 보완을 당부드립니다.<br>`;
+                }
+
+                if (appData.studentProfile?.university) {
+                    report += `<br>🎓 **목표 대학 매칭 피드백**: **${appData.studentProfile.university} ${appData.studentProfile.department || ''}** 합격을 위해서는 주요 백분위 상위권 수렴이 목표입니다. 6월/9월 모의평가에서 안정적으로 1~2등급권에 안착할 수 있도록 기출 구조 복기를 에이전트 챗에 즉시 질의해 보세요!`;
+                }
+
+                reportEl.innerHTML = parseMarkdown(report);
+            } else {
+                // GPA (내신) 분석 리포트
+                if (!appData.schoolGrades || appData.schoolGrades.length === 0) {
+                    reportEl.innerHTML = `학기별 내신 성적을 1개 이상 등록하면 AI가 전반적인 수시/내신 학습 등급 추이를 분석하여 피드백을 생성합니다.`;
+                    return;
+                }
+
+                const semesterOrder = {
+                    "1학년 1학기": 1, "1학년 2학기": 2,
+                    "2학년 1학기": 3, "2학년 2학기": 4,
+                    "3학년 1학기": 5, "3학년 2학기": 6
+                };
+
+                const sorted = [...appData.schoolGrades].sort((a, b) => semesterOrder[a.semester] - semesterOrder[b.semester]);
+                const latest = sorted[sorted.length - 1];
+
+                let report = `🎓 **${latest.semester} 내신 평균 ${latest.avg.toFixed(2)}등급 기준 정밀 AI 수시 리포트**<br><br>`;
+                report += `현재 가장 최신 학기인 **${latest.semester}**에 전체 내신 평균 **${latest.avg.toFixed(2)}등급**을 확보하셨습니다.<br><br>`;
+
+                // 학기 발전 추이 분석
+                if (sorted.length > 1) {
+                    const first = sorted[0];
+                    const diff = latest.avg - first.avg; // 등급 하강이 등급 상승
+                    if (diff < 0) {
+                        report += `📈 **성적 우상향 분석**: 최초 기록 학기(${first.semester}: ${first.avg.toFixed(2)}등급)에 비해 내신 평균이 **${Math.abs(diff).toFixed(2)}등급 상승**하는 아주 훌륭한 상승 곡선을 그리고 있습니다. 학생부종합전형 지원 시 대학 입학사정관에게 발전 가능성과 잠재력을 매우 강하게 어필할 수 있는 대단한 무기입니다.<br>`;
+                    } else if (diff > 0) {
+                        report += `📉 **성적 보안 제안**: 최초 학기 대비 평균 등급이 다소 내려앉았습니다. 종합 전형의 부족한 서류 강점을 보완하기 위해 3학년 교과 세특(세부능력 및 특기사항)을 탐구 심화 보고서 위주로 보강할 필요가 있습니다.<br>`;
+                    } else {
+                        report += `➖ **안정적 내신 스펙트럼**: 전 학기에 걸쳐 고르고 안정적인 내신 스펙트럼을 보존하고 있습니다. 기복 없이 학업 성실도를 성실히 수행했음을 나타냅니다.<br>`;
+                    }
+                }
+
+                if (latest.math && latest.math >= 3) {
+                    report += `<br>⚠️ **이공계열/자연계열 경보**: 수학 등급이 **${latest.math}등급**으로 다소 약세입니다. 가려는 대학이 학업 이수도에서 수학 비중이 큰 대학이라면 플래너에 수학 약점 기출 및 증명 풀이 일정을 집중 고정하여 기말 학업 평가 세특을 보강해 두시길 당부드립니다.`;
+                }
+
+                reportEl.innerHTML = parseMarkdown(report);
+            }
+        }
+
+        // -------------------------------------------------------------
+        // 3. 집중 부스트 타이머 & Web Audio API 노이즈 신디사이저
+        // -------------------------------------------------------------
+        window.applyPreset = function (label, minutes) {
+            document.getElementById('examLabel').innerText = label;
+            timeRemaining = minutes * 60;
+            updateTimerDisplay();
+            if (isTimerRunning) {
+                toggleTimer(); // 실행 중이면 일시정지 후 리셋
+            }
+        };
+
+        function updateTimerDisplay() {
+            const mins = String(Math.floor(timeRemaining / 60)).padStart(2, '0');
+            const secs = String(timeRemaining % 60).padStart(2, '0');
+            document.getElementById('timeDisplay').innerText = `${mins}:${secs}`;
+        }
+
+        window.toggleTimer = function () {
+            const playIcon = document.getElementById('playIcon');
+            const playBtn = document.getElementById('playBtn');
+
+            if (isTimerRunning) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                playIcon.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"/>`; // 재생 아이콘
+            } else {
+                isTimerRunning = true;
+                playIcon.innerHTML = `<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>`; // 정지 아이콘
+
+                timerInterval = setInterval(() => {
+                    if (timeRemaining > 0) {
+                        timeRemaining--;
+                        updateTimerDisplay();
+                    } else {
+                        clearInterval(timerInterval);
+                        isTimerRunning = false;
+                        playIcon.innerHTML = `<polygon points="5 3 19 12 5 21 5 3"/>`;
+                        alert("🚨 설정된 수능 영역 집중 사이클이 무사히 종료되었습니다! 잠시 머리를 맑게 식혀주세요.");
+                        timeRemaining = 4800;
+                        updateTimerDisplay();
+                    }
+                }, 1000);
+            }
+        };
+
+        window.resetTimer = function () {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            timeRemaining = 4800; // 80분 초기화
+            document.getElementById('examLabel').innerText = "국어 영역 (1교시)";
+            document.getElementById('playIcon').innerHTML = `<polygon points="5 3 19 12 5 21 5 3"/>`;
+            updateTimerDisplay();
+        };
+
+        // Web Audio API 기반 오디오 신디사이저 팩토리
+        function initAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                gainNode = audioCtx.createGain();
+                gainNode.gain.value = isVolumeMuted ? 0 : 0.6;
+                gainNode.connect(audioCtx.destination);
+            }
+        }
+
+        window.toggleSoundGlobal = function () {
+            const volIcon = document.getElementById('volumeIcon');
+            initAudioContext();
+
+            if (isVolumeMuted) {
+                isVolumeMuted = false;
+                gainNode.gain.value = 0.6;
+                volIcon.innerHTML = `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
+            } else {
+                isVolumeMuted = true;
+                gainNode.gain.value = 0;
+                volIcon.innerHTML = `<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>`;
+            }
+        };
+
+        window.toggleNoise = function (type) {
+            initAudioContext();
+
+            if (activeNoiseSource && activeNoiseType === type) {
+                // 재생 중인 소리를 다시 누르면 정지
+                stopNoise();
+                return;
+            }
+
+            if (activeNoiseSource) {
+                stopNoise();
+            }
+
+            let source = null;
+            document.getElementById(`noise-${type}`).classList.add('active');
+            document.querySelector(`#noise-${type} .noise-play-btn`).innerText = "■";
+
+            if (type === 'brown') {
+                source = createBrownNoiseNode();
+            } else if (type === 'rain') {
+                source = createRainNoiseNode();
+            } else if (type === 'binaural') {
+                source = createBinauralBeatsNode();
+            }
+
+            if (source) {
+                source.connect(gainNode);
+                source.start ? source.start() : source.noteOn(0);
+                activeNoiseSource = source;
+                activeNoiseType = type;
+            }
+        };
+
+        function stopNoise() {
+            if (activeNoiseSource) {
+                try {
+                    activeNoiseSource.stop ? activeNoiseSource.stop() : activeNoiseSource.noteOff(0);
+                } catch (e) { }
+                activeNoiseSource = null;
+            }
+            if (activeNoiseType) {
+                document.getElementById(`noise-${activeNoiseType}`).classList.remove('active');
+                document.querySelector(`#noise-${activeNoiseType} .noise-play-btn`).innerText = "▶";
+                activeNoiseType = null;
+            }
+        }
+
+        // Brown Noise 파도 생성 합성 알고리즘
+        function createBrownNoiseNode() {
+            const bufferSize = 10 * audioCtx.sampleRate;
+            const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            let lastOut = 0.0;
+
+            for (let i = 0; i < bufferSize; i++) {
+                const white = Math.random() * 2 - 1;
+                output[i] = (lastOut + (0.02 * white)) / 1.02;
+                lastOut = output[i];
+                output[i] *= 3.5; // Gain 보정
+            }
+
+            const noiseSource = audioCtx.createBufferSource();
+            noiseSource.buffer = noiseBuffer;
+            noiseSource.loop = true;
+            return noiseSource;
+        }
+
+        // Rain Sound (창가 빗소리) 합성 알고리즘
+        function createRainNoiseNode() {
+            // Brown Noise 기반 배경 빗소리 + 고주파 툭툭 튀는 빗방울 합성
+            const bufferSize = 10 * audioCtx.sampleRate;
+            const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            let lastOut = 0.0;
+
+            for (let i = 0; i < bufferSize; i++) {
+                const white = Math.random() * 2 - 1;
+                // Brown noise filter
+                output[i] = (lastOut + (0.02 * white)) / 1.02;
+                lastOut = output[i];
+                output[i] *= 2.8;
+
+                // 빗방울(Droplets) 랜덤 툭툭 소리 추가
+                if (Math.random() < 0.0003) {
+                    const spike = Math.random() * 0.45;
+                    // 급격한 주파수 감쇠 파형 생성
+                    for (let j = 0; j < 120 && (i + j) < bufferSize; j++) {
+                        output[i + j] += spike * Math.exp(-j * 0.1) * Math.sin(j * 0.8);
+                    }
+                }
+            }
+
+            const noiseSource = audioCtx.createBufferSource();
+            noiseSource.buffer = noiseBuffer;
+            noiseSource.loop = true;
+            return noiseSource;
+        }
+
+        // Binaural Beats (양이각 뇌파 유도: 알파파 - 집중 모드)
+        function createBinauralBeatsNode() {
+            // 왼쪽 귀 200Hz, 오른쪽 귀 210Hz 주파수를 쏴주면 차이값 10Hz(알파파)가 두뇌에서 유도됨.
+            const oscLeft = audioCtx.createOscillator();
+            const oscRight = audioCtx.createOscillator();
+
+            const pannerLeft = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
+            const pannerRight = audioCtx.createStereoPanner ? audioCtx.createStereoPanner() : null;
+
+            oscLeft.frequency.value = 200; // Carrier
+            oscRight.frequency.value = 210; // Carrier + 10Hz (Alpha Wave)
+
+            const merger = audioCtx.createChannelMerger(2);
+
+            if (pannerLeft && pannerRight) {
+                pannerLeft.pan.value = -1; // 완전 왼쪽
+                pannerRight.pan.value = 1; // 완전 오른쪽
+                oscLeft.connect(pannerLeft).connect(merger);
+                oscRight.connect(pannerRight).connect(merger);
+            } else {
+                // 구형 브라우저 fallback
+                oscLeft.connect(merger, 0, 0);
+                oscRight.connect(merger, 0, 1);
+            }
+
+            const wrapper = {
+                connect: function (dest) {
+                    merger.connect(dest);
+                },
+                start: function () {
+                    oscLeft.start(0);
+                    oscRight.start(0);
+                },
+                stop: function () {
+                    oscLeft.stop(0);
+                    oscRight.stop(0);
+                }
+            };
+
+            return wrapper;
+        }
+
+        // 차트 그리기 최초 트리거 지원용 반응형 리스너
+        window.addEventListener('resize', () => {
+            if (document.getElementById('desk-grade').classList.contains('active')) {
+                drawGradeChart();
+            }
+        });
+
+    </script>
+</body>
+
+</html>
